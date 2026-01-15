@@ -253,12 +253,7 @@ func (d *DenoDownloader) getPlatformAsset() (string, error) {
 		return "", fmt.Errorf("unsupported platform: %s/%s - Deno does not provide pre-built binaries for this operating system and architecture combination", goos, goarch)
 	}
 
-	extension := ".zip"
-	if goos == "linux" {
-		extension = ".tar.gz"
-	}
-
-	return fmt.Sprintf("deno-%s%s", platform, extension), nil
+	return fmt.Sprintf("deno-%s%s", platform, ".zip"), nil
 }
 
 // getReleaseInfo fetches release information from GitHub.
