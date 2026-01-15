@@ -43,7 +43,7 @@ tasks:
   build:
     desc: Builds the terraform provider executables for local use with the example stack
     cmds:
-      - goreleaser build --clean --auto-snapshot --single-target -o ./bin/terraform-provider-deno-tf-bridge.exe
+      - goreleaser build --clean --snapshot --single-target -o ./bin/terraform-provider-denobridge{{if eq OS "windows"}}.exe{{end}}
 
   test:
     desc: Runs the test suite (including tf acceptance tests)
@@ -53,6 +53,27 @@ tasks:
     cmds:
       - go test -v ./internal/provider/... {{.CLI_ARGS}}
 
+  config:generate:
+    desc: Generates the Terraform/OpenTofu CLI config file with absolute paths
+    vars:
+      TF_CLI_CONFIG_FILE: "{{.ROOT_DIR}}/.tofurc"
+      TF_BIN_DIR: "{{.ROOT_DIR}}/bin"
+    env:
+      TF_CLI_CONFIG_FILE: "{{.TF_CLI_CONFIG_FILE | fromSlash}}"
+      TF_BIN_DIR: "{{.TF_BIN_DIR | fromSlash}}"
+    cmds:
+      - |
+          echo 'Deno.writeTextFileSync(Deno.env.get("TF_CLI_CONFIG_FILE"), `
+            provider_installation {
+
+              dev_overrides {
+                "example.registry.local/brad-jones/denobridge" = "${Deno.env.get("TF_BIN_DIR").replaceAll("\\", "\\\\")}"
+              }
+
+              direct {}
+            }
+          `);' | deno run -qA -
+
   run:tf:
     desc: Run any terraform command against the example stack.
     summary: |
@@ -61,6 +82,7 @@ tasks:
       Eg: task run:terraform -- apply
     deps:
       - build
+      - config:generate
     env:
       TF_LOG: WARN
       TF_CLI_CONFIG_FILE: "{{.ROOT_DIR}}/.tofurc"
@@ -75,6 +97,7 @@ tasks:
       Eg: task run:tofu -- apply
     deps:
       - build
+      - config:generate
     env:
       TF_LOG: WARN
       TF_CLI_CONFIG_FILE: "{{.ROOT_DIR}}/.tofurc"
