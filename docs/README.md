@@ -5,7 +5,7 @@ between the Terraform provider and Deno TypeScript implementations.
 
 ## Overview
 
-The deno-tf-bridge provider allows TypeScript developers to write Terraform resources,
+The denobridge provider allows TypeScript developers to write Terraform resources,
 data sources, ephemeral resources, and actions using Deno. The provider starts your Deno
 script as an HTTP server and communicates with it via a well-defined HTTP API.
 

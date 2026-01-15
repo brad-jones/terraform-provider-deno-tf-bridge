@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/brad-jones/terraform-provider-deno-tf-bridge/internal/provider"
+	"github.com/brad-jones/terraform-provider-denobridge/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 

@@ -26,7 +26,7 @@ path = "CHANGELOG.md"
 template = "remote"
 remote = "github.com"
 owner = "brad-jones"
-repository = "terraform-provider-deno-tf-bridge"
+repository = "terraform-provider-denobridge"
 authors = [
   { signature = "Brad Jones", username = "brad-jones" },
 ]

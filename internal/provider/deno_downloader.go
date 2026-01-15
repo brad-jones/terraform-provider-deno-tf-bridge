@@ -108,7 +108,7 @@ func denoBinaryName() string {
 
 // getCacheDir returns the cache directory for Deno binaries.
 func (d *DenoDownloader) getCacheDir() (string, error) {
-	cacheDir := filepath.Join(os.TempDir(), "deno-tf-bridge")
+	cacheDir := filepath.Join(os.TempDir(), "terraform-provider-denobridge")
 	if err := os.MkdirAll(cacheDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}
