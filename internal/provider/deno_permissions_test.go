@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// TestDenoPermissions_MapToDenoPermissions_Nil tests mapping nil permissions
+// TestDenoPermissions_MapToDenoPermissions_Nil tests mapping nil permissions.
 func TestDenoPermissions_MapToDenoPermissions_Nil(t *testing.T) {
 	var perms *denoPermissionsTF = nil
 	result := perms.mapToDenoPermissions()
@@ -29,7 +29,7 @@ func TestDenoPermissions_MapToDenoPermissions_Nil(t *testing.T) {
 	}
 }
 
-// TestDenoPermissions_MapToDenoPermissions_AllPermissions tests mapping with all permissions
+// TestDenoPermissions_MapToDenoPermissions_AllPermissions tests mapping with all permissions.
 func TestDenoPermissions_MapToDenoPermissions_AllPermissions(t *testing.T) {
 	perms := &denoPermissionsTF{
 		All:   types.BoolValue(true),
@@ -43,7 +43,7 @@ func TestDenoPermissions_MapToDenoPermissions_AllPermissions(t *testing.T) {
 	}
 }
 
-// TestDenoPermissions_MapToDenoPermissions_AllowList tests mapping with allow list
+// TestDenoPermissions_MapToDenoPermissions_AllowList tests mapping with allow list.
 func TestDenoPermissions_MapToDenoPermissions_AllowList(t *testing.T) {
 	allowList, _ := types.ListValue(types.StringType, []attr.Value{
 		types.StringValue("net"),
@@ -74,7 +74,7 @@ func TestDenoPermissions_MapToDenoPermissions_AllowList(t *testing.T) {
 	}
 }
 
-// TestDenoPermissions_MapToDenoPermissions_DenyList tests mapping with deny list
+// TestDenoPermissions_MapToDenoPermissions_DenyList tests mapping with deny list.
 func TestDenoPermissions_MapToDenoPermissions_DenyList(t *testing.T) {
 	denyList, _ := types.ListValue(types.StringType, []attr.Value{
 		types.StringValue("write"),
@@ -100,7 +100,7 @@ func TestDenoPermissions_MapToDenoPermissions_DenyList(t *testing.T) {
 	}
 }
 
-// TestDenoPermissions_MapToDenoPermissions_BothLists tests mapping with both allow and deny lists
+// TestDenoPermissions_MapToDenoPermissions_BothLists tests mapping with both allow and deny lists.
 func TestDenoPermissions_MapToDenoPermissions_BothLists(t *testing.T) {
 	allowList, _ := types.ListValue(types.StringType, []attr.Value{
 		types.StringValue("net"),
@@ -127,7 +127,7 @@ func TestDenoPermissions_MapToDenoPermissions_BothLists(t *testing.T) {
 	}
 }
 
-// TestDenoPermissions_MapToDenoPermissions_NullLists tests mapping with null lists
+// TestDenoPermissions_MapToDenoPermissions_NullLists tests mapping with null lists.
 func TestDenoPermissions_MapToDenoPermissions_NullLists(t *testing.T) {
 	perms := &denoPermissionsTF{
 		All:   types.BoolValue(false),

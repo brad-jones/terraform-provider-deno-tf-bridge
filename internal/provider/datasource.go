@@ -117,7 +117,14 @@ func (d *denoBridgeDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Call the read endpoint
 	var result any

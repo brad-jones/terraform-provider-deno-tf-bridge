@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// TestFromDynamic_Null tests conversion of null dynamic value
+// TestFromDynamic_Null tests conversion of null dynamic value.
 func TestFromDynamic_Null(t *testing.T) {
 	dynVal := types.DynamicNull()
 	result := fromDynamic(dynVal)
@@ -19,7 +19,7 @@ func TestFromDynamic_Null(t *testing.T) {
 	}
 }
 
-// TestFromDynamic_String tests conversion of string dynamic value
+// TestFromDynamic_String tests conversion of string dynamic value.
 func TestFromDynamic_String(t *testing.T) {
 	stringVal := types.StringValue("test")
 	dynVal := types.DynamicValue(stringVal)
@@ -30,7 +30,7 @@ func TestFromDynamic_String(t *testing.T) {
 	}
 }
 
-// TestFromDynamic_Bool tests conversion of bool dynamic value
+// TestFromDynamic_Bool tests conversion of bool dynamic value.
 func TestFromDynamic_Bool(t *testing.T) {
 	boolVal := types.BoolValue(true)
 	dynVal := types.DynamicValue(boolVal)
@@ -41,7 +41,7 @@ func TestFromDynamic_Bool(t *testing.T) {
 	}
 }
 
-// TestFromDynamic_Number tests conversion of number dynamic value
+// TestFromDynamic_Number tests conversion of number dynamic value.
 func TestFromDynamic_Number(t *testing.T) {
 	bigFloat := big.NewFloat(42.5)
 	numVal := types.NumberValue(bigFloat)
@@ -55,7 +55,7 @@ func TestFromDynamic_Number(t *testing.T) {
 	}
 }
 
-// TestFromDynamic_List tests conversion of list dynamic value
+// TestFromDynamic_List tests conversion of list dynamic value.
 func TestFromDynamic_List(t *testing.T) {
 	listVal, _ := types.ListValue(types.StringType, []attr.Value{
 		types.StringValue("a"),
@@ -76,7 +76,7 @@ func TestFromDynamic_List(t *testing.T) {
 	}
 }
 
-// TestFromDynamic_Map tests conversion of map dynamic value
+// TestFromDynamic_Map tests conversion of map dynamic value.
 func TestFromDynamic_Map(t *testing.T) {
 	mapVal, _ := types.MapValue(types.StringType, map[string]attr.Value{
 		"key1": types.StringValue("value1"),
@@ -98,7 +98,7 @@ func TestFromDynamic_Map(t *testing.T) {
 	}
 }
 
-// TestFromDynamic_Object tests conversion of object dynamic value
+// TestFromDynamic_Object tests conversion of object dynamic value.
 func TestFromDynamic_Object(t *testing.T) {
 	objVal, _ := types.ObjectValue(
 		map[string]attr.Type{
@@ -126,7 +126,7 @@ func TestFromDynamic_Object(t *testing.T) {
 	}
 }
 
-// TestToDynamic_Nil tests conversion of nil to dynamic value
+// TestToDynamic_Nil tests conversion of nil to dynamic value.
 func TestToDynamic_Nil(t *testing.T) {
 	result := toDynamic(nil)
 
@@ -135,7 +135,7 @@ func TestToDynamic_Nil(t *testing.T) {
 	}
 }
 
-// TestToDynamic_String tests conversion of string to dynamic value
+// TestToDynamic_String tests conversion of string to dynamic value.
 func TestToDynamic_String(t *testing.T) {
 	result := toDynamic("test")
 
@@ -151,7 +151,7 @@ func TestToDynamic_String(t *testing.T) {
 	}
 }
 
-// TestToDynamic_Bool tests conversion of bool to dynamic value
+// TestToDynamic_Bool tests conversion of bool to dynamic value.
 func TestToDynamic_Bool(t *testing.T) {
 	result := toDynamic(true)
 
@@ -163,7 +163,7 @@ func TestToDynamic_Bool(t *testing.T) {
 	}
 }
 
-// TestToDynamic_Float tests conversion of float to dynamic value
+// TestToDynamic_Float tests conversion of float to dynamic value.
 func TestToDynamic_Float(t *testing.T) {
 	result := toDynamic(42.5)
 
@@ -178,7 +178,7 @@ func TestToDynamic_Float(t *testing.T) {
 	}
 }
 
-// TestToDynamic_Map tests conversion of map to dynamic value
+// TestToDynamic_Map tests conversion of map to dynamic value.
 func TestToDynamic_Map(t *testing.T) {
 	input := map[string]any{
 		"key1": "value1",
@@ -196,7 +196,7 @@ func TestToDynamic_Map(t *testing.T) {
 	}
 }
 
-// TestToDynamic_Slice tests conversion of slice to dynamic value
+// TestToDynamic_Slice tests conversion of slice to dynamic value.
 func TestToDynamic_Slice(t *testing.T) {
 	input := []any{"a", "b", "c"}
 	result := toDynamic(input)

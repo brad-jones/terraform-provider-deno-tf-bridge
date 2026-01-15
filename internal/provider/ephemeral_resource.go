@@ -117,7 +117,14 @@ func (r *denoBridgeEphemeralResource) Open(ctx context.Context, req ephemeral.Op
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Call the open endpoint
 	var response *struct {
@@ -223,7 +230,14 @@ func (r *denoBridgeEphemeralResource) Renew(ctx context.Context, req ephemeral.R
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Call the renew endpoint
 	httpResp := client.C().
@@ -325,7 +339,14 @@ func (r *denoBridgeEphemeralResource) Close(ctx context.Context, req ephemeral.C
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Call the close endpoint
 	httpResp := client.C().

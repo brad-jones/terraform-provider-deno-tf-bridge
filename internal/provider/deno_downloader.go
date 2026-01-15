@@ -28,32 +28,32 @@ const (
 	denoRepo          = "denoland/deno"
 )
 
-// DenoDownloader manages downloading and caching Deno binaries
+// DenoDownloader manages downloading and caching Deno binaries.
 type DenoDownloader struct {
 	mu sync.Mutex
 }
 
-// githubRelease represents a GitHub release response
+// githubRelease represents a GitHub release response.
 type githubRelease struct {
 	TagName string        `json:"tag_name"`
 	Assets  []githubAsset `json:"assets"`
 }
 
-// githubAsset represents a GitHub release asset
+// githubAsset represents a GitHub release asset.
 type githubAsset struct {
 	Name               string `json:"name"`
 	BrowserDownloadURL string `json:"browser_download_url"`
 	Digest             string `json:"digest"`
 }
 
-// NewDenoDownloader creates a new Deno downloader
+// NewDenoDownloader creates a new Deno downloader.
 func NewDenoDownloader() *DenoDownloader {
 	return &DenoDownloader{}
 }
 
 // GetDenoBinary returns the path to a Deno binary for the specified version.
 // It checks the cache first, and downloads if necessary.
-// version can be "latest" or a specific version like "v2.1.4"
+// version can be "latest" or a specific version like "v2.1.4".
 func (d *DenoDownloader) GetDenoBinary(ctx context.Context, version string) (string, error) {
 	// Lock to prevent concurrent downloads
 	d.mu.Lock()
@@ -98,7 +98,7 @@ func (d *DenoDownloader) GetDenoBinary(ctx context.Context, version string) (str
 	return binaryPath, nil
 }
 
-// denoBinaryName returns the platform-specific binary name
+// denoBinaryName returns the platform-specific binary name.
 func denoBinaryName() string {
 	if runtime.GOOS == "windows" {
 		return "deno.exe"
@@ -106,7 +106,7 @@ func denoBinaryName() string {
 	return "deno"
 }
 
-// getCacheDir returns the cache directory for Deno binaries
+// getCacheDir returns the cache directory for Deno binaries.
 func (d *DenoDownloader) getCacheDir() (string, error) {
 	cacheDir := filepath.Join(os.TempDir(), "deno-tf-bridge")
 	if err := os.MkdirAll(cacheDir, 0755); err != nil {
@@ -115,7 +115,7 @@ func (d *DenoDownloader) getCacheDir() (string, error) {
 	return cacheDir, nil
 }
 
-// getLatestVersion fetches the latest stable release version from GitHub
+// getLatestVersion fetches the latest stable release version from GitHub.
 func (d *DenoDownloader) getLatestVersion(ctx context.Context) (string, error) {
 	url := fmt.Sprintf("%s/repos/%s/releases/latest", githubAPIBase, denoRepo)
 
@@ -155,7 +155,7 @@ func (d *DenoDownloader) getLatestVersion(ctx context.Context) (string, error) {
 	return release.TagName, nil
 }
 
-// downloadAndInstall downloads and installs a specific version of Deno
+// downloadAndInstall downloads and installs a specific version of Deno.
 func (d *DenoDownloader) downloadAndInstall(ctx context.Context, version string, cacheDir string) error {
 	// Get platform-specific asset name
 	assetName, err := d.getPlatformAsset()
@@ -234,7 +234,7 @@ func (d *DenoDownloader) downloadAndInstall(ctx context.Context, version string,
 	return nil
 }
 
-// getPlatformAsset returns the asset name for the current platform
+// getPlatformAsset returns the asset name for the current platform.
 func (d *DenoDownloader) getPlatformAsset() (string, error) {
 	goos := runtime.GOOS
 	goarch := runtime.GOARCH
@@ -261,7 +261,7 @@ func (d *DenoDownloader) getPlatformAsset() (string, error) {
 	return fmt.Sprintf("deno-%s%s", platform, extension), nil
 }
 
-// getReleaseInfo fetches release information from GitHub
+// getReleaseInfo fetches release information from GitHub.
 func (d *DenoDownloader) getReleaseInfo(ctx context.Context, version string) (*githubRelease, error) {
 	url := fmt.Sprintf("%s/repos/%s/releases/tags/%s", githubAPIBase, denoRepo, version)
 
@@ -295,7 +295,7 @@ func (d *DenoDownloader) getReleaseInfo(ctx context.Context, version string) (*g
 	return &release, nil
 }
 
-// downloadFile downloads a file from a URL
+// downloadFile downloads a file from a URL.
 func (d *DenoDownloader) downloadFile(ctx context.Context, url, destPath string) error {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -326,7 +326,7 @@ func (d *DenoDownloader) downloadFile(ctx context.Context, url, destPath string)
 	return nil
 }
 
-// verifyChecksum verifies the SHA256 checksum of a file
+// verifyChecksum verifies the SHA256 checksum of a file.
 func (d *DenoDownloader) verifyChecksum(filePath, expectedChecksum string) error {
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -347,7 +347,7 @@ func (d *DenoDownloader) verifyChecksum(filePath, expectedChecksum string) error
 	return nil
 }
 
-// extractArchive extracts the Deno binary from a zip or tar.gz archive
+// extractArchive extracts the Deno binary from a zip or tar.gz archive.
 func (d *DenoDownloader) extractArchive(archivePath, destPath string) error {
 	if strings.HasSuffix(archivePath, ".zip") {
 		return d.extractZip(archivePath, destPath)
@@ -357,7 +357,7 @@ func (d *DenoDownloader) extractArchive(archivePath, destPath string) error {
 	return fmt.Errorf("unsupported archive format: %s", archivePath)
 }
 
-// extractZip extracts the deno binary from a zip file
+// extractZip extracts the deno binary from a zip file.
 func (d *DenoDownloader) extractZip(zipPath, destPath string) error {
 	r, err := zip.OpenReader(zipPath)
 	if err != nil {
@@ -391,7 +391,7 @@ func (d *DenoDownloader) extractZip(zipPath, destPath string) error {
 	return fmt.Errorf("deno binary not found in zip archive")
 }
 
-// extractTarGz extracts the deno binary from a tar.gz file
+// extractTarGz extracts the deno binary from a tar.gz file.
 func (d *DenoDownloader) extractTarGz(tarGzPath, destPath string) error {
 	f, err := os.Open(tarGzPath)
 	if err != nil {
@@ -435,7 +435,7 @@ func (d *DenoDownloader) extractTarGz(tarGzPath, destPath string) error {
 	return fmt.Errorf("deno binary not found in tar.gz archive")
 }
 
-// cleanupOldVersions removes old Deno versions, keeping only the newest 3
+// cleanupOldVersions removes old Deno versions, keeping only the newest 3.
 func (d *DenoDownloader) cleanupOldVersions(ctx context.Context, cacheDir string) error {
 	entries, err := os.ReadDir(cacheDir)
 	if err != nil {

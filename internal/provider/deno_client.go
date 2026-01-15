@@ -18,7 +18,7 @@ import (
 	"github.com/imroc/req/v3"
 )
 
-// DenoClient manages a Deno HTTP server process and communication with it
+// DenoClient manages a Deno HTTP server process and communication with it.
 type DenoClient struct {
 	scriptPath     string
 	permissions    *denoPermissions
@@ -29,7 +29,7 @@ type DenoClient struct {
 	ctx            context.Context
 }
 
-// NewDenoClient creates a new Deno client for the given script
+// NewDenoClient creates a new Deno client for the given script.
 func NewDenoClient(denoBinaryPath string, scriptPath string, permissions *denoPermissions) *DenoClient {
 	return &DenoClient{
 		scriptPath:     scriptPath,
@@ -38,7 +38,7 @@ func NewDenoClient(denoBinaryPath string, scriptPath string, permissions *denoPe
 	}
 }
 
-// Start launches the Deno HTTP server process
+// Start launches the Deno HTTP server process.
 func (c *DenoClient) Start(ctx context.Context) error {
 	// Store context for logging
 	c.ctx = ctx
@@ -99,14 +99,16 @@ func (c *DenoClient) Start(ctx context.Context) error {
 
 	// Wait for the server to be ready
 	if err := c.waitForReady(ctx, 30*time.Second); err != nil {
-		c.Stop()
-		return fmt.Errorf("Deno server failed to become ready: %w", err)
+		if stopErr := c.Stop(); stopErr != nil {
+			return fmt.Errorf("deno server failed to become ready: %w, and failed to stop: %w", err, stopErr)
+		}
+		return fmt.Errorf("deno server failed to become ready: %w", err)
 	}
 
 	return nil
 }
 
-// Stop terminates the Deno HTTP server process
+// Stop terminates the Deno HTTP server process.
 func (c *DenoClient) Stop() error {
 	if c.process != nil && c.process.Process != nil {
 		if err := c.process.Process.Kill(); err != nil {
@@ -116,7 +118,7 @@ func (c *DenoClient) Stop() error {
 	return nil
 }
 
-// waitForReady polls the health endpoint until the server responds
+// waitForReady polls the health endpoint until the server responds.
 func (c *DenoClient) waitForReady(ctx context.Context, timeout time.Duration) error {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -130,9 +132,9 @@ func (c *DenoClient) waitForReady(ctx context.Context, timeout time.Duration) er
 		if c.process != nil {
 			err := c.process.Wait()
 			if err != nil {
-				processExited <- fmt.Errorf("Deno process exited with error: %w", err)
+				processExited <- fmt.Errorf("deno process exited with error: %w", err)
 			} else {
-				processExited <- fmt.Errorf("Deno process exited unexpectedly")
+				processExited <- fmt.Errorf("deno process exited unexpectedly")
 			}
 		}
 	}()
@@ -170,7 +172,7 @@ func (c *DenoClient) C() *req.Client {
 	return client
 }
 
-// getAvailablePort finds an available port on localhost
+// getAvailablePort finds an available port on localhost.
 func getAvailablePort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -183,17 +185,21 @@ func getAvailablePort() (int, error) {
 	}
 	defer listener.Close()
 
-	return listener.Addr().(*net.TCPAddr).Port, nil
+	tcpAddr, ok := listener.Addr().(*net.TCPAddr)
+	if !ok {
+		return 0, fmt.Errorf("failed to get TCP address from listener")
+	}
+	return tcpAddr.Port, nil
 }
 
-// isTestContext returns true if running in a test context
+// isTestContext returns true if running in a test context.
 func isTestContext() bool {
 	// Check if TF_LOG_PROVIDER_DENO_TOFU_BRIDGE is not set (typical in tests)
 	// or if explicit test mode is enabled
 	return os.Getenv("DENO_TOFU_BRIDGE_TEST_MODE") == "true"
 }
 
-// tflogAdapter adapts tflog to the req logger interface
+// tflogAdapter adapts tflog to the req logger interface.
 type tflogAdapter struct {
 	ctx context.Context
 }
@@ -229,7 +235,7 @@ func (l *tflogAdapter) Errorf(format string, v ...interface{}) {
 	}
 }
 
-// pipeToDebugLog reads from a reader and logs each line as debug
+// pipeToDebugLog reads from a reader and logs each line as debug.
 func pipeToDebugLog(ctx context.Context, reader io.Reader, prefix string) {
 	scanner := bufio.NewScanner(reader)
 	if isTestContext() {
@@ -245,7 +251,7 @@ func pipeToDebugLog(ctx context.Context, reader io.Reader, prefix string) {
 	}
 }
 
-// pipeToErrorLog reads from a reader and logs each line as error
+// pipeToErrorLog reads from a reader and logs each line as error.
 func pipeToErrorLog(ctx context.Context, reader io.Reader, prefix string) {
 	scanner := bufio.NewScanner(reader)
 	if isTestContext() {

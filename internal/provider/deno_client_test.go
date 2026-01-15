@@ -38,7 +38,11 @@ func TestDenoClient(t *testing.T) {
 	client := NewDenoClient(denoBinary, scriptPath, &denoPermissions{All: true})
 	err = client.Start(t.Context())
 	assert.NoError(t, err)
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			t.Errorf("failed to stop client: %v", err)
+		}
+	}()
 
 	var response *struct {
 		Message string `json:"message"`

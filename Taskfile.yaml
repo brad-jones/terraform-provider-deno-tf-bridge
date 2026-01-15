@@ -26,6 +26,16 @@ tasks:
       - go install -v github.com/go-delve/delve/cmd/dlv@latest
       - go install -v golang.org/x/tools/gopls@latest
 
+  lint:
+    desc: Lints our code to ensure it remains of a high quality.
+    cmds:
+      - golangci-lint run
+
+  fmt:
+    desc: Formats our code to ensure it looks consistent.
+    cmds:
+      - dprint fmt
+
   build:
     desc: Builds the terraform provider executable
     cmds:

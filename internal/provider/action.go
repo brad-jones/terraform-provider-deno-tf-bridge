@@ -110,7 +110,14 @@ func (a *denoBridgeAction) Invoke(ctx context.Context, req action.InvokeRequest,
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Call /invoke endpoint with the props
 	httpResp, err := client.C().R().
@@ -135,7 +142,7 @@ func (a *denoBridgeAction) Invoke(ctx context.Context, req action.InvokeRequest,
 	}
 
 	// Stream the JSONL response and send progress events
-	if err := streamJSONLProgress(ctx, httpResp.Body, resp); err != nil {
+	if err := streamJSONLProgress(httpResp.Body, resp); err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to process streaming response",
 			fmt.Sprintf("Error reading streaming response: %s", err.Error()),
@@ -144,8 +151,8 @@ func (a *denoBridgeAction) Invoke(ctx context.Context, req action.InvokeRequest,
 	}
 }
 
-// streamJSONLProgress reads a streaming JSONL response and sends progress events
-func streamJSONLProgress(ctx context.Context, body io.Reader, resp *action.InvokeResponse) error {
+// streamJSONLProgress reads a streaming JSONL response and sends progress events.
+func streamJSONLProgress(body io.Reader, resp *action.InvokeResponse) error {
 	scanner := bufio.NewScanner(body)
 
 	for scanner.Scan() {

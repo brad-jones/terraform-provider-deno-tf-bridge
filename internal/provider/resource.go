@@ -132,7 +132,14 @@ func (r *denoBridgeResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Call the create endpoint
 	var response *struct {
@@ -178,7 +185,14 @@ func (r *denoBridgeResource) Read(ctx context.Context, req resource.ReadRequest,
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Call the read endpoint
 	var response *struct {
@@ -198,7 +212,7 @@ func (r *denoBridgeResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	if response.Exists != nil && *response.Exists == false {
+	if response.Exists != nil && !*response.Exists {
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -238,7 +252,14 @@ func (r *denoBridgeResource) Update(ctx context.Context, req resource.UpdateRequ
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Call the update endpoint
 	var response *struct {
@@ -290,7 +311,14 @@ func (r *denoBridgeResource) Delete(ctx context.Context, req resource.DeleteRequ
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Call the delete endpoint
 	if err := client.C().
@@ -362,7 +390,14 @@ func (r *denoBridgeResource) ModifyPlan(ctx context.Context, req resource.Modify
 		)
 		return
 	}
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Failed to stop Deno server",
+				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
+			)
+		}
+	}()
 
 	// Build the request payload
 	id := ""

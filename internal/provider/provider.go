@@ -40,7 +40,7 @@ type denoBridgeProviderModel struct {
 	DenoVersion    types.String `tfsdk:"deno_version"`
 }
 
-// ProviderConfig holds the resolved provider configuration
+// ProviderConfig holds the resolved provider configuration.
 type ProviderConfig struct {
 	DenoBinaryPath string
 }
