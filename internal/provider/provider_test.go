@@ -38,7 +38,8 @@ func testAccPreCheck(t *testing.T) {
 func testAccProviderConfig() string {
 	denoBinary, err := exec.LookPath("deno")
 	if err != nil {
-		// If deno is not in PATH, return empty config which will trigger auto-download
+		// If deno is not in PATH, return default config without deno_binary_path
+		// which will trigger auto-download
 		return `provider "denobridge" {}`
 	}
 

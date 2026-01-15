@@ -41,7 +41,7 @@ func canAccessGitHub() bool {
 		return false
 	}
 
-	client := &http.Client{Timeout: githubAPITimeout}
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return false
