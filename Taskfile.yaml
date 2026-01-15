@@ -28,6 +28,8 @@ tasks:
 
   lint:
     desc: Lints our code to ensure it remains of a high quality.
+    env:
+      CGO_ENABLED: 0
     cmds:
       - dprint check
       - golangci-lint run
