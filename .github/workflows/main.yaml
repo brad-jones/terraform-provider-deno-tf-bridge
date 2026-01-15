@@ -52,6 +52,8 @@ jobs:
 
       - name: 🧪 Test
         run: task test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
     needs: [test]
