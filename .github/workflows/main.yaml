@@ -85,9 +85,9 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
 
-      #- name: 🚀 Publish
-      #  run: cog bump --auto
-      #  env:
-      #    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #    GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+      - name: 🚀 Publish
+        run: cog bump --auto
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
