@@ -2,6 +2,10 @@
 bin/
 dist/
 
+# Node modules (for testing only)
+node_modules/
+package-lock.json
+
 # pixi environments
 .pixi/*
 !.pixi/config.toml
