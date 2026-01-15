@@ -11,6 +11,8 @@ import (
 	"github.com/bitfield/script"
 )
 
+const githubAPITimeout = 3 * time.Second
+
 func TestGetDenoBinary(t *testing.T) {
 	// Skip this test if we're in an offline environment (e.g., CI with network restrictions)
 	// This test requires downloading Deno from GitHub which may not be available
@@ -29,9 +31,9 @@ func TestGetDenoBinary(t *testing.T) {
 	assert.Contains(t, denoHelpText, "A modern JavaScript and TypeScript runtime")
 }
 
-// canAccessGitHub checks if GitHub API is accessible
+// canAccessGitHub checks if the GitHub API is accessible.
 func canAccessGitHub() bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), githubAPITimeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.github.com", nil)
@@ -39,7 +41,7 @@ func canAccessGitHub() bool {
 		return false
 	}
 
-	client := &http.Client{Timeout: 3 * time.Second}
+	client := &http.Client{Timeout: githubAPITimeout}
 	resp, err := client.Do(req)
 	if err != nil {
 		return false

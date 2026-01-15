@@ -3,6 +3,7 @@ package provider
 import (
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -41,7 +42,11 @@ func testAccProviderConfig() string {
 		return `provider "denobridge" {}`
 	}
 
+	// Escape the path for safe inclusion in HCL configuration
+	escapedPath := strings.ReplaceAll(denoBinary, `\`, `\\`)
+	escapedPath = strings.ReplaceAll(escapedPath, `"`, `\"`)
+
 	return `provider "denobridge" {
-  deno_binary_path = "` + denoBinary + `"
+  deno_binary_path = "` + escapedPath + `"
 }`
 }
