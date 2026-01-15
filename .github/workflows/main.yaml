@@ -8,7 +8,53 @@ env:
   CI: true
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Git Checkout
+        uses: actions/checkout@v6
+
+      - name: ⚙️ Install pixi env
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: v0.62.2
+          activate-environment: true
+
+      - name: ✔️ Lint
+        run: task lint
+
+  test:
+    needs: [lint]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: windows-latest
+          - os: macos-15-intel
+          - os: macos-latest
+    steps:
+      - name: ⬇️ Git Checkout
+        uses: actions/checkout@v6
+
+      - name: ⚙️ Install pixi env
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: v0.62.2
+          activate-environment: true
+
+      - name: Additional Environment Initialization
+        run: task init
+
+      - name: 🏗️ Build
+        run: task build
+
+      - name: 🧪 Test
+        run: task test
+
   publish:
+    needs: [test]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -29,15 +75,6 @@ jobs:
 
       - name: Additional Environment Initialization
         run: task init
-
-      - name: ✔️ Lint
-        run: task lint
-
-      - name: 🧪 Test
-        run: task test
-
-      - name: 🏗️ Build
-        run: task build
 
       - name: 🔑 Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6.3.0
