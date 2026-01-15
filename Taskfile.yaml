@@ -43,6 +43,7 @@ tasks:
   build:
     desc: Builds the terraform provider executables for local use with the example stack
     cmds:
+      - mkdir -p ./bin
       - goreleaser build --clean --snapshot --single-target -o ./bin/terraform-provider-denobridge{{if eq OS "windows"}}.exe{{end}}
 
   test:
