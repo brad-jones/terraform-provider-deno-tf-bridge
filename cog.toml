@@ -1,0 +1,32 @@
+# The Conventional Commits toolbox
+# see: https://github.com/cocogitto/cocogitto
+
+tag_prefix = "v"
+branch_whitelist = ["master"]
+from_latest_tag = true
+
+post_bump_hooks = [
+  "git push && git push --tags",
+  "goreleaser release",
+]
+
+[commit_types]
+build = { bump_patch = true }
+ci = { bump_patch = true }
+revert = { bump_patch = true }
+docs = { bump_patch = true }
+test = { bump_patch = true }
+style = { bump_patch = true }
+chore = { bump_patch = true }
+perf = { bump_patch = true }
+
+# Create a CHANGELOG that includes helpful links to github diffs / commits / PRs, etc.
+[changelog]
+path = "CHANGELOG.md"
+template = "remote"
+remote = "github.com"
+owner = "brad-jones"
+repository = "terraform-provider-deno-tf-bridge"
+authors = [
+  { signature = "Brad Jones", username = "brad-jones" },
+]

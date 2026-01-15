@@ -29,6 +29,7 @@ tasks:
   lint:
     desc: Lints our code to ensure it remains of a high quality.
     cmds:
+      - dprint check
       - golangci-lint run
 
   fmt:
@@ -37,9 +38,9 @@ tasks:
       - dprint fmt
 
   build:
-    desc: Builds the terraform provider executable
+    desc: Builds the terraform provider executables for local use with the example stack
     cmds:
-      - go build -o ./bin/terraform-provider-denobridge.exe ./main.go
+      - goreleaser build --clean --auto-snapshot --single-target -o ./bin/terraform-provider-deno-tf-bridge.exe
 
   test:
     desc: Runs the test suite (including tf acceptance tests)

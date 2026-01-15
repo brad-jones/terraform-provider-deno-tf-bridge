@@ -23,6 +23,7 @@ environments:
       - conda: https://prefix.dev/brads-forge/linux-64/dprint-0.51.1-h81b34b9_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/go-1.25.5-h282a287_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/golangci-lint-2.8.0-hfc2019e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/goreleaser-2.11.2-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/h2-4.3.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/hpack-4.1.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/httpie-3.2.4-pyh55f8243_1.conda
@@ -81,6 +82,7 @@ environments:
       - conda: https://prefix.dev/brads-forge/osx-64/dprint-0.51.1-he0f4bc8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/go-1.25.5-h8227ba6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/golangci-lint-2.8.0-hccc6df8_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/goreleaser-2.11.2-h694c41f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/h2-4.3.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/hpack-4.1.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/httpie-3.2.4-pyh55f8243_1.conda
@@ -136,6 +138,7 @@ environments:
       - conda: https://prefix.dev/brads-forge/osx-arm64/dprint-0.51.1-he8ea13f_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/go-1.25.5-h56ed88c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/golangci-lint-2.8.0-h820172f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/goreleaser-2.11.2-hce30654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/h2-4.3.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/hpack-4.1.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/httpie-3.2.4-pyh55f8243_1.conda
@@ -193,6 +196,7 @@ environments:
       - conda: https://prefix.dev/brads-forge/win-64/dprint-0.51.1-h3c70cbc_2.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/go-1.25.5-h59133dd_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/golangci-lint-2.8.0-h11686cb_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/win-64/goreleaser-2.11.2-h57928b3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/h2-4.3.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/hpack-4.1.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/httpie-3.2.4-pyh31a35d3_1.conda
@@ -677,6 +681,36 @@ packages:
   license_family: GPL
   size: 13300265
   timestamp: 1767841159550
+- conda: https://conda.anaconda.org/conda-forge/linux-64/goreleaser-2.11.2-ha770c72_0.conda
+  sha256: 15fee50a1091dc27ee5ff3cd91052d19c0beab3d3394f899c2190e882109d756
+  md5: b0f3d72a24e8017956eac1fb8e9152e1
+  license: MIT
+  license_family: MIT
+  size: 21865771
+  timestamp: 1753987694917
+- conda: https://conda.anaconda.org/conda-forge/osx-64/goreleaser-2.11.2-h694c41f_0.conda
+  sha256: d4a12016629cfdf1bde02df26ad425676e533c6fce871576c198fae4e5d1197f
+  md5: cff167445ad38628a67cd8a7ba8c6a7e
+  constrains:
+  - __osx>=10.12
+  license: MIT
+  license_family: MIT
+  size: 21039943
+  timestamp: 1753987712170
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/goreleaser-2.11.2-hce30654_0.conda
+  sha256: 6ba32b8f5281e7aa3b49fd69c218ea019153df2089bea56117a911f31da0c2c7
+  md5: ec2a11f2670324dbaa318044800e92a3
+  license: MIT
+  license_family: MIT
+  size: 19679151
+  timestamp: 1753987829426
+- conda: https://conda.anaconda.org/conda-forge/win-64/goreleaser-2.11.2-h57928b3_0.conda
+  sha256: 3a922862befa8e1ef2e58e3583808434760c83d1c137cc5b354d23e94907d081
+  md5: f3672b73c3bd2f82ba69c5ca02802d55
+  license: MIT
+  license_family: MIT
+  size: 20951637
+  timestamp: 1753988318519
 - conda: https://conda.anaconda.org/conda-forge/noarch/h2-4.3.0-pyhcf101f3_0.conda
   sha256: 84c64443368f84b600bfecc529a1194a3b14c3656ee2e832d15a20e0329b6da3
   md5: 164fc43f0b53b6e3a7bc7dce5e4f1dc9
