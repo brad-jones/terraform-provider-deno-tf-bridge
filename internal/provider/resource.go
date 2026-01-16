@@ -68,7 +68,6 @@ func (r *denoBridgeResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"state": schema.DynamicAttribute{
 				Description: "Additional computed state of the resource as returned by the Deno script.",
 				Computed:    true,
-				Optional:    true,
 			},
 			"permissions": schema.SingleNestedAttribute{
 				Description: "Deno runtime permissions for the script.",
