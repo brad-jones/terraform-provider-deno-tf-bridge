@@ -9,7 +9,8 @@
     "source.sortImports": "explicit"
   },
   "files.associations": {
-    "*.gitmsgtpl": "git-commit"
+    "*.gitmsgtpl": "git-commit",
+    "*.md.tmpl": "markdown"
   },
 
   // We need to explcitly define all language specfic settings

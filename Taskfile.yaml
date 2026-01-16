@@ -22,12 +22,20 @@ tasks:
 
   install-go-tools:
     desc: Installs all the golang dev tooling that vscode needs (for some reason the auto install that VsCode tries to run fails)
+    env:
+      GOBIN: "{{.ROOT_DIR}}/.pixi/envs/default/bin"
     cmds:
       - go install -v github.com/cweill/gotests/gotests@v1.6.0
       - go install -v github.com/josharian/impl@v1.4.0
       - go install -v github.com/haya14busa/goplay/cmd/goplay@v1.0.0
       - go install -v github.com/go-delve/delve/cmd/dlv@latest
       - go install -v golang.org/x/tools/gopls@latest
+      - go install -v github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+
+  docs:generate:
+    desc: Executes tfplugindocs to generate our ./docs folder
+    cmds:
+      - tfplugindocs generate
 
   lint:
     desc: Lints our code to ensure it remains of a high quality.

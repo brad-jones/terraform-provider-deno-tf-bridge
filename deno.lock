@@ -34,6 +34,9 @@
       "integrity": "sha512-PmQi306+M/ct/m5s66Hrg+adPnkD5jiO6IjA7WhWw0gSBSo1EcRegwuI1deZ+wd5pzCGynCcn2DprnE4/yEV4w=="
     }
   },
+  "remote": {
+    "https://raw.githubusercontent.com/brad-jones/terraform-provider-denobridge/refs/heads/master/example/providers/datasource_dns_record.ts": "bc8c1fd9314ff4f0f294c45f6178146c20cf3dbffa9a7553b26d634ebb6c76b2"
+  },
   "workspace": {
     "dependencies": [
       "jsr:@hono/hono@^4.7.0",
