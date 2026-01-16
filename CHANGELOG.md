@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.1.1](https://github.com/brad-jones/terraform-provider-denobridge/compare/de2faf30ffc938f870e0854e2f202e010265b40c..v0.1.1) - 2026-01-16
+#### Bug Fixes
+- (**resource**) while the state is optional, we don't require state to be returned from the deno script, setting this value here caused tfdocs to treat it as an input property which it is not. - ([de2faf3](https://github.com/brad-jones/terraform-provider-denobridge/commit/de2faf30ffc938f870e0854e2f202e010265b40c)) - [@brad-jones](https://github.com/brad-jones)
+#### Documentation
+- added tfplugindocs and generated thew docs folder - ([1eb2d92](https://github.com/brad-jones/terraform-provider-denobridge/commit/1eb2d922e4716356da8e8ce8ed1cfc57d5e9cddb)) - [@brad-jones](https://github.com/brad-jones)
+
+- - -
+
 ## [v0.1.0](https://github.com/brad-jones/terraform-provider-denobridge/compare/a51f139d4a36aef7be24ba0594c59757dce477cc..v0.1.0) - 2026-01-15
 #### Features
 - added goreleaser and cocogitto config - ([f418c35](https://github.com/brad-jones/terraform-provider-denobridge/commit/f418c350d6145de9a3742084fe4a85440c86f751)) - [@brad-jones](https://github.com/brad-jones)
