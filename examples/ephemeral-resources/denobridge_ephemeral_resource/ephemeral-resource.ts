@@ -1,4 +1,5 @@
 import { Hono } from "jsr:@hono/hono";
+import { serveTLS } from "../../mtls.ts";
 
 const app = new Hono();
 
@@ -17,4 +18,4 @@ app.post("/open", async (c) => {
   return c.json(crypto.randomUUID());
 });
 
-export default app satisfies Deno.ServeDefaultExport;
+await serveTLS(app.fetch);

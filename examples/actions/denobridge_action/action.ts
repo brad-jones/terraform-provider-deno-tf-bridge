@@ -1,5 +1,6 @@
 import { Hono } from "jsr:@hono/hono";
 import { streamText } from "jsr:@hono/hono/streaming";
+import { serveTLS } from "../../mtls.ts";
 
 const app = new Hono();
 
@@ -21,4 +22,4 @@ app.post("/invoke", async (c) => {
   });
 });
 
-export default app satisfies Deno.ServeDefaultExport;
+await serveTLS(app.fetch);

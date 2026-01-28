@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { serveTLS } from "./mtls.ts";
 
 const app = new Hono();
 
@@ -141,4 +142,4 @@ app.post("/modify-plan", async (c) => {
   // })
 });
 
-export default app satisfies Deno.ServeDefaultExport;
+await serveTLS(app.fetch);

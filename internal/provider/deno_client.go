@@ -3,9 +3,18 @@ package provider
 import (
 	"bufio"
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"log"
+	"math/big"
 	"net"
 	"net/http"
 	"net/url"
@@ -29,6 +38,7 @@ type DenoClient struct {
 	port           int
 	baseURL        string
 	ctx            context.Context
+	tlsConfig      *tls.Config
 }
 
 // NewDenoClient creates a new Deno client for the given script.
@@ -41,21 +51,92 @@ func NewDenoClient(denoBinaryPath, scriptPath, configPath string, permissions *d
 	}
 }
 
+// generateClientCertificate generates an ephemeral self-signed certificate for mTLS.
+// Returns the certificate PEM, key PEM, and tls.Certificate.
+func generateClientCertificate() (certPEM string, keyPEM string, tlsCert tls.Certificate, err error) {
+	// Generate private key
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		return "", "", tls.Certificate{}, fmt.Errorf("failed to generate private key: %w", err)
+	}
+
+	// Create certificate template
+	serialNumber, err := rand.Int(rand.Reader, new(big.Int).Lsh(big.NewInt(1), 128))
+	if err != nil {
+		return "", "", tls.Certificate{}, fmt.Errorf("failed to generate serial number: %w", err)
+	}
+
+	template := x509.Certificate{
+		SerialNumber: serialNumber,
+		Subject: pkix.Name{
+			CommonName: "127.0.0.1",
+		},
+		IPAddresses: []net.IP{net.ParseIP("127.0.0.1")},
+		NotBefore:   time.Now(),
+		NotAfter:    time.Now().Add(24 * time.Hour),
+		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+	}
+
+	// Create self-signed certificate
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
+	if err != nil {
+		return "", "", tls.Certificate{}, fmt.Errorf("failed to create certificate: %w", err)
+	}
+
+	// Encode certificate to PEM
+	certPEMBlock := pem.EncodeToMemory(&pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: certDER,
+	})
+
+	// Encode private key to PEM
+	keyDER, err := x509.MarshalECPrivateKey(privateKey)
+	if err != nil {
+		return "", "", tls.Certificate{}, fmt.Errorf("failed to marshal private key: %w", err)
+	}
+	keyPEMBlock := pem.EncodeToMemory(&pem.Block{
+		Type:  "EC PRIVATE KEY",
+		Bytes: keyDER,
+	})
+
+	// Create tls.Certificate
+	tlsCert, err = tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+	if err != nil {
+		return "", "", tls.Certificate{}, fmt.Errorf("failed to create tls certificate: %w", err)
+	}
+
+	return string(certPEMBlock), string(keyPEMBlock), tlsCert, nil
+}
+
+// handshakeMessage represents the JSON structure for stdin/stdout handshake.
+type handshakeMessage struct {
+	Cert string `json:"cert"`
+	Key  string `json:"key,omitempty"`
+	Port int    `json:"port,omitempty"`
+}
+
 // Start launches the Deno HTTP server process.
 func (c *DenoClient) Start(ctx context.Context) error {
 	// Store context for logging
 	c.ctx = ctx
 
-	// Find an available port
-	port, err := getAvailablePort()
+	// Generate client certificate for mTLS
+	certPEM, keyPEM, tlsCert, err := generateClientCertificate()
 	if err != nil {
-		return fmt.Errorf("failed to find available port: %w", err)
+		return fmt.Errorf("failed to generate client certificate: %w", err)
 	}
-	c.port = port
-	c.baseURL = fmt.Sprintf("http://127.0.0.1:%d", port)
 
-	// Build Deno command arguments
-	args := []string{"serve", "-q", "--port", fmt.Sprintf("%d", port)}
+	// Initialize TLS config with client certificate
+	c.tlsConfig = &tls.Config{
+		Certificates: []tls.Certificate{tlsCert},
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		MinVersion:   tls.VersionTLS12,
+		ServerName:   "127.0.0.1",
+	}
+
+	// Build Deno command arguments - use "run" instead of "serve"
+	args := []string{"run", "-q"}
 
 	// Attempt to locate a deno config file if none given
 	configPath := c.configPath
@@ -71,13 +152,24 @@ func (c *DenoClient) Start(ctx context.Context) error {
 		if c.permissions.All {
 			args = append(args, "--allow-all")
 		} else {
+			// Always need at least --allow-net for the HTTP server
+			hasNet := false
 			for _, perm := range c.permissions.Allow {
+				if perm == "net" || strings.HasPrefix(perm, "net=") {
+					hasNet = true
+				}
 				args = append(args, fmt.Sprintf("--allow-%s", perm))
+			}
+			if !hasNet {
+				args = append(args, "--allow-net")
 			}
 			for _, perm := range c.permissions.Deny {
 				args = append(args, fmt.Sprintf("--deny-%s", perm))
 			}
 		}
+	} else {
+		// If no permissions specified, at least allow network
+		args = append(args, "--allow-net")
 	}
 
 	// Handle script path - support file:// URLs and remote URLs
@@ -129,7 +221,13 @@ func (c *DenoClient) Start(ctx context.Context) error {
 		tflog.Debug(ctx, fmt.Sprintf("Executing Deno command: %s", cmdStr))
 	}
 
-	// Capture stdout and stderr through tflog
+	// Create stdin pipe to pass client certificate
+	stdin, err := c.process.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdin pipe: %w", err)
+	}
+
+	// Capture stdout and stderr
 	stdout, err := c.process.StdoutPipe()
 	if err != nil {
 		return fmt.Errorf("failed to create stdout pipe: %w", err)
@@ -144,7 +242,48 @@ func (c *DenoClient) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to start Deno process: %w", err)
 	}
 
-	// Start goroutines to pipe output to tflog
+	// Write client certificate (public part only) to stdin as JSON
+	// Note: We do NOT send the private key - that would be a security flaw
+	clientMsg := handshakeMessage{
+		Cert: certPEM,
+	}
+	encoder := json.NewEncoder(stdin)
+	if err := encoder.Encode(clientMsg); err != nil {
+		_ = c.Stop()
+		return fmt.Errorf("failed to write client certificate to stdin: %w", err)
+	}
+	stdin.Close() // Close stdin to signal EOF
+
+	// Parse handshake from stdout (first line must be JSON with port and server cert)
+	serverCertPEM, port, err := c.parseHandshake(ctx, stdout, 30*time.Second)
+	if err != nil {
+		if stopErr := c.Stop(); stopErr != nil {
+			return fmt.Errorf("handshake failed: %w, and failed to stop: %w", err, stopErr)
+		}
+		return fmt.Errorf("handshake failed: %w", err)
+	}
+
+	// Store port and construct base URL
+	c.port = port
+	c.baseURL = fmt.Sprintf("https://127.0.0.1:%d", port)
+
+	// Parse and add server certificate to TLS config
+	block, _ := pem.Decode([]byte(serverCertPEM))
+	if block == nil {
+		_ = c.Stop()
+		return fmt.Errorf("failed to decode server certificate PEM")
+	}
+	serverCert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		_ = c.Stop()
+		return fmt.Errorf("failed to parse server certificate: %w", err)
+	}
+	certPool := x509.NewCertPool()
+	certPool.AddCert(serverCert)
+	c.tlsConfig.RootCAs = certPool
+
+	// Start goroutines to pipe remaining output to tflog
+	// (stdout reader is already past the handshake line)
 	go pipeToDebugLog(ctx, stdout, "[deno stdout] ")
 	go pipeToErrorLog(ctx, stderr, "[deno stderr] ")
 
@@ -157,6 +296,73 @@ func (c *DenoClient) Start(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// parseHandshake reads the first line from stdout and parses the JSON handshake.
+// Returns the server certificate PEM, port number, and any error.
+// The handshake must be received within the specified timeout.
+func (c *DenoClient) parseHandshake(ctx context.Context, stdout io.Reader, timeout time.Duration) (string, int, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	// Channel to receive handshake result
+	type result struct {
+		cert string
+		port int
+		err  error
+	}
+	resultCh := make(chan result, 1)
+
+	// Read handshake in goroutine
+	go func() {
+		scanner := bufio.NewScanner(stdout)
+		if scanner.Scan() {
+			line := scanner.Text()
+			var msg handshakeMessage
+			if err := json.Unmarshal([]byte(line), &msg); err != nil {
+				resultCh <- result{err: fmt.Errorf("failed to parse handshake JSON: %w (line: %s)", err, line)}
+				return
+			}
+			if msg.Port == 0 {
+				resultCh <- result{err: fmt.Errorf("handshake missing port field")}
+				return
+			}
+			if msg.Cert == "" {
+				resultCh <- result{err: fmt.Errorf("handshake missing cert field")}
+				return
+			}
+			resultCh <- result{cert: msg.Cert, port: msg.Port}
+		} else if err := scanner.Err(); err != nil {
+			resultCh <- result{err: fmt.Errorf("error reading handshake: %w", err)}
+		} else {
+			resultCh <- result{err: fmt.Errorf("EOF before handshake received")}
+		}
+	}()
+
+	// Monitor process exit
+	processExited := make(chan error, 1)
+	go func() {
+		if c.process != nil {
+			err := c.process.Wait()
+			if err != nil {
+				processExited <- fmt.Errorf("deno process exited during handshake with error: %w", err)
+			} else {
+				processExited <- fmt.Errorf("deno process exited during handshake unexpectedly")
+			}
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return "", 0, fmt.Errorf("timeout waiting for handshake from Deno server (scripts must implement mTLS handshake - see documentation)")
+	case err := <-processExited:
+		return "", 0, err
+	case res := <-resultCh:
+		if res.err != nil {
+			return "", 0, res.err
+		}
+		return res.cert, res.port, nil
+	}
 }
 
 // Stop terminates the Deno HTTP server process.
@@ -214,6 +420,11 @@ func (c *DenoClient) C() *req.Client {
 		SetBaseURL(c.baseURL).
 		SetCommonContentType("application/json").
 		SetLogger(&tflogAdapter{ctx: c.ctx})
+
+	// Configure TLS with client certificate and server CA
+	if c.tlsConfig != nil {
+		client.SetTLSClientConfig(c.tlsConfig)
+	}
 
 	// Only enable debug logging and dumping if TF_LOG is set to DEBUG
 	if os.Getenv("TF_LOG") == "DEBUG" {
