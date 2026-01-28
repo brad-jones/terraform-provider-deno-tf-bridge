@@ -5,8 +5,8 @@
 _Bridge the infrastructure-as-code world with the TypeScript ecosystem_
 
 [![Built with Deno](https://img.shields.io/badge/Built%20with-Deno-00ADD8?style=flat&logo=deno)](https://deno.com/)
-[![Terraform](https://img.shields.io/badge/Terraform-844FBA?style=flat&logo=terraform&logoColor=white)](https://www.terraform.io/)
-[![OpenTofu](https://img.shields.io/badge/OpenTofu-FFDA18?style=flat&logo=opentofu&logoColor=black)](https://opentofu.org/)
+[![Terraform](https://img.shields.io/badge/Terraform-844FBA?style=flat&logo=terraform&logoColor=white)](https://registry.terraform.io/providers/brad-jones/denobridge/latest)
+[![OpenTofu](https://img.shields.io/badge/OpenTofu-FFDA18?style=flat&logo=opentofu&logoColor=black)](https://search.opentofu.org/provider/brad-jones/denobridge/latest)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](#)
 
 ---

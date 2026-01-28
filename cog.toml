@@ -5,10 +5,7 @@ tag_prefix = "v"
 branch_whitelist = ["master"]
 from_latest_tag = true
 
-post_bump_hooks = [
-  "git push && git push --tags",
-  "goreleaser release",
-]
+post_bump_hooks = ["task publish VERSION={{version}}"]
 
 [commit_types]
 build = { bump_patch = true }

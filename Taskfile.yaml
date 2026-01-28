@@ -131,3 +131,12 @@ tasks:
           remove("./example/terraform.tfstate.backup");
           remove("./example/bjc.mx");
           ' | deno run -qA -
+
+  publish:
+    desc: This is triggered by cog as a post_bump_hook to publish all the final publishable artifacts
+    requires:
+      vars:
+        - VERSION
+    cmds:
+      - git push && git push --tags
+      - goreleaser release --release-notes <(deno run -qA ./scripts/cog-extract-changelog.ts < CHANGELOG.md)
