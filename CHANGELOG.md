@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.2.1](https://github.com/brad-jones/terraform-provider-denobridge/compare/5d8fd11ad21e78b551a108d6a57b04a01090b008..v0.2.1) - 2026-01-28
+#### Bug Fixes
+- (**build**) should get some nice changelog text in the github release now - ([5d8fd11](https://github.com/brad-jones/terraform-provider-denobridge/commit/5d8fd11ad21e78b551a108d6a57b04a01090b008)) - github-actions[bot]
+
+- - -
+
 ## [v0.2.0](https://github.com/brad-jones/terraform-provider-denobridge/compare/a83aab7283a2ccded7342d3102059e82a282bb80..v0.2.0) - 2026-01-27
 #### Features
 - added config_file attribute and automatic config file discovery - ([3566c73](https://github.com/brad-jones/terraform-provider-denobridge/commit/3566c733e29e5519b2b273bc6887e981aea7a331)) - github-actions[bot]
