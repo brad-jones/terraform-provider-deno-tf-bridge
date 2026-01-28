@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.2.4](https://github.com/brad-jones/terraform-provider-denobridge/compare/7609c9b8e515150e43776d377154a58acff362f9..v0.2.4) - 2026-01-28
+#### Bug Fixes
+- cater for file and other remote script urls when building the deno serve command - ([7609c9b](https://github.com/brad-jones/terraform-provider-denobridge/commit/7609c9b8e515150e43776d377154a58acff362f9)) - github-actions[bot]
+
+- - -
+
 ## [v0.2.3](https://github.com/brad-jones/terraform-provider-denobridge/compare/aa6849c0899d246bd7e9ae94f56b37fec1e19167..v0.2.3) - 2026-01-28
 #### Miscellaneous Chores
 - log the final deno serve command that is executed by the provider - ([aa6849c](https://github.com/brad-jones/terraform-provider-denobridge/commit/aa6849c0899d246bd7e9ae94f56b37fec1e19167)) - github-actions[bot]
