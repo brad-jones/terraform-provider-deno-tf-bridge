@@ -1,0 +1,103 @@
+{
+  "openrpc": "1.3.2",
+  "info": {
+    "title": "Alice JSON-RPC API",
+    "description": "Methods that Alice (Go parent process) exposes to Bob (Deno child process). These methods are called by Bob to send notifications or responses back to Alice.",
+    "version": "1.0.0"
+  },
+  "methods": [
+    {
+      "name": "progress",
+      "summary": "Stream progress updates",
+      "description": "Bob sends progress notifications to Alice during long-running operations. This is a notification (one-way) - no response is expected.",
+      "params": [
+        {
+          "name": "message",
+          "description": "Progress message describing current operation state",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "percent",
+          "description": "Progress percentage (0-100)",
+          "required": true,
+          "schema": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      ],
+      "result": {
+        "name": "void",
+        "description": "This is a notification - no result is returned",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "examples": [
+        {
+          "name": "Progress notification example",
+          "params": [
+            {
+              "name": "message",
+              "value": "Processing item 50 of 100"
+            },
+            {
+              "name": "percent",
+              "value": 50
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "summary": "Send log messages to Alice",
+      "description": "Bob sends log messages to Alice for centralized logging. This is a notification (one-way).",
+      "params": [
+        {
+          "name": "level",
+          "description": "Log level",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": ["debug", "info", "warn", "error"]
+          }
+        },
+        {
+          "name": "message",
+          "description": "Log message",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "void",
+        "description": "This is a notification - no result is returned",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "examples": [
+        {
+          "name": "Info log example",
+          "params": [
+            {
+              "name": "level",
+              "value": "info"
+            },
+            {
+              "name": "message",
+              "value": "Started processing request"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

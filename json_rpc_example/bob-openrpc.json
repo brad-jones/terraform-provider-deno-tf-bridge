@@ -1,0 +1,202 @@
+{
+  "openrpc": "1.3.2",
+  "info": {
+    "title": "Bob JSON-RPC API",
+    "description": "Methods that Bob (Deno child process) exposes to Alice (Go parent process). These methods are called by Alice to request operations from Bob.",
+    "version": "1.0.0"
+  },
+  "methods": [
+    {
+      "name": "health",
+      "summary": "Health check",
+      "description": "Verify that Bob is ready to accept requests. Alice calls this during startup to ensure Bob is initialized.",
+      "params": [],
+      "result": {
+        "name": "healthResponse",
+        "description": "Health status information",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["ok"]
+            },
+            "timestamp": {
+              "type": "number",
+              "description": "Unix timestamp in milliseconds"
+            }
+          },
+          "required": ["status", "timestamp"]
+        }
+      },
+      "examples": [
+        {
+          "name": "Health check example",
+          "result": {
+            "name": "healthResponse",
+            "value": {
+              "status": "ok",
+              "timestamp": 1706572800000
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "echo",
+      "summary": "Echo a message",
+      "description": "Simple request-response to test basic communication. Bob echoes the message back to Alice.",
+      "params": [
+        {
+          "name": "message",
+          "description": "Message to echo",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "echoResponse",
+        "description": "The echoed message",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "echoed": {
+              "type": "string",
+              "description": "The message that was echoed"
+            },
+            "timestamp": {
+              "type": "number",
+              "description": "Unix timestamp when the echo was processed"
+            }
+          },
+          "required": ["echoed", "timestamp"]
+        }
+      },
+      "examples": [
+        {
+          "name": "Echo example",
+          "params": [
+            {
+              "name": "message",
+              "value": "Hello, Bob!"
+            }
+          ],
+          "result": {
+            "name": "echoResponse",
+            "value": {
+              "echoed": "Hello, Bob!",
+              "timestamp": 1706572800000
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "processWithProgress",
+      "summary": "Process data with streaming progress updates",
+      "description": "Simulates a long-running operation that sends progress notifications back to Alice. This demonstrates bidirectional JSON-RPC where Bob calls Alice's 'progress' method during processing.",
+      "params": [
+        {
+          "name": "items",
+          "description": "Array of items to process",
+          "required": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "name": "delayMs",
+          "description": "Delay in milliseconds between processing each item (simulates work)",
+          "required": false,
+          "schema": {
+            "type": "number",
+            "default": 100
+          }
+        }
+      ],
+      "result": {
+        "name": "processResult",
+        "description": "Summary of processing results",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "processed": {
+              "type": "number",
+              "description": "Number of items successfully processed"
+            },
+            "results": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Processed results"
+            },
+            "duration": {
+              "type": "number",
+              "description": "Total processing time in milliseconds"
+            }
+          },
+          "required": ["processed", "results", "duration"]
+        }
+      },
+      "examples": [
+        {
+          "name": "Process with progress example",
+          "params": [
+            {
+              "name": "items",
+              "value": ["item1", "item2", "item3"]
+            },
+            {
+              "name": "delayMs",
+              "value": 50
+            }
+          ],
+          "result": {
+            "name": "processResult",
+            "value": {
+              "processed": 3,
+              "results": ["ITEM1", "ITEM2", "ITEM3"],
+              "duration": 150
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "shutdown",
+      "summary": "Graceful shutdown",
+      "description": "Request Bob to perform graceful shutdown. Bob should clean up resources and exit.",
+      "params": [],
+      "result": {
+        "name": "shutdownResponse",
+        "description": "Shutdown acknowledgment",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": ["message"]
+        }
+      },
+      "examples": [
+        {
+          "name": "Shutdown example",
+          "result": {
+            "name": "shutdownResponse",
+            "value": {
+              "message": "Shutting down gracefully"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
