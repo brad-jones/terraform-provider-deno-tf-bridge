@@ -41,6 +41,8 @@ tasks:
     desc: Lints our code to ensure it remains of a high quality.
     cmds:
       - dprint check
+      - deno lint
+      - deno publish --dry-run --allow-dirty
       - golangci-lint run
 
   fmt:

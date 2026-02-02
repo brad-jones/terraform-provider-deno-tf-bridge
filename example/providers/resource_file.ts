@@ -1,3 +1,5 @@
+// deno-lint-ignore-file require-await no-unused-vars
+
 import { ResourceProvider } from "@brad-jones/terraform-provider-denobridge";
 
 interface Props {
@@ -19,7 +21,7 @@ new ResourceProvider<Props, State>({
       },
     };
   },
-  async read(id, _props) {
+  async read(id, props) {
     try {
       const content = await Deno.readTextFile(id);
       return {
@@ -35,7 +37,7 @@ new ResourceProvider<Props, State>({
       throw e;
     }
   },
-  async update(id, nextProps, currentProps, _currentState) {
+  async update(id, nextProps, currentProps, currentState) {
     if (nextProps.path !== currentProps.path) {
       throw new Error("Cannot change file path - requires resource replacement");
     }
@@ -45,7 +47,7 @@ new ResourceProvider<Props, State>({
   async delete(id, _props, _state) {
     await Deno.remove(id);
   },
-  async modifyPlan(_id, planType, nextProps, currentProps, _currentState) {
+  async modifyPlan(id, planType, nextProps, currentProps, currentState) {
     if (planType !== "update") {
       return;
     }

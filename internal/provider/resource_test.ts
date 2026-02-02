@@ -1,3 +1,5 @@
+// deno-lint-ignore-file require-await no-unused-vars
+
 import { ResourceProvider } from "@brad-jones/terraform-provider-denobridge";
 
 interface Props {
@@ -23,7 +25,7 @@ new ResourceProvider<Props, State>({
       },
     };
   },
-  async read(id, _props) {
+  async read(id, props) {
     // The read methods job is to get the current state of an existing resource.
     // And return an updated set of props & optional additional state that may
     // have changed (by outside actors), since the resource was initially created
@@ -64,7 +66,7 @@ new ResourceProvider<Props, State>({
   async delete(id, _props, _state) {
     await Deno.remove(id);
   },
-  async modifyPlan(_id, planType, nextProps, currentProps, _currentState) {
+  async modifyPlan(_id, planType, nextProps, currentProps, currentState) {
     // If you decide you don't want to make any changes to the plan, just return a 204 No Content response.
     if (planType !== "update") {
       return;

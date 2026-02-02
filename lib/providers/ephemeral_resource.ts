@@ -2,7 +2,7 @@ import { JSONRPCMethodNotFoundError } from "@yieldray/json-rpc-ts";
 import type { z } from "@zod/zod";
 import { BaseJsonRpcProvider } from "./base.ts";
 
-export type EphemeralResourceProviderMethods<TProps, TResult, TPrivateData = any> = {
+export type EphemeralResourceProviderMethods<TProps, TResult, TPrivateData = never> = {
   open(props: TProps): Promise<{
     result: TResult;
     renewAt?: number;
@@ -15,7 +15,7 @@ export type EphemeralResourceProviderMethods<TProps, TResult, TPrivateData = any
   close?(privateData: TPrivateData): Promise<void>;
 };
 
-export class EphemeralResourceProvider<TProps, TResult, TPrivateData = any> extends BaseJsonRpcProvider {
+export class EphemeralResourceProvider<TProps, TResult, TPrivateData = never> extends BaseJsonRpcProvider {
   constructor(providerMethods: EphemeralResourceProviderMethods<TProps, TResult, TPrivateData>) {
     super(() => ({
       async open(params: { props: Record<string, unknown> }) {
@@ -40,7 +40,7 @@ export class EphemeralResourceProvider<TProps, TResult, TPrivateData = any> exte
 export class ZodEphemeralResourceProvider<
   TProps extends z.ZodType,
   TResult extends z.ZodType,
-  TPrivateData extends z.ZodType = any,
+  TPrivateData extends z.ZodType = never,
 > extends EphemeralResourceProvider<z.infer<TProps>, z.infer<TResult>, z.infer<TPrivateData>> {
   constructor(
     propsSchema: TProps,

@@ -9,6 +9,7 @@ interface Result {
 }
 
 new EphemeralResourceProvider<Props, Result>({
+  // deno-lint-ignore require-await
   async open({ type }) {
     if (type !== "v4") {
       throw new Error("Unsupported UUID type");
