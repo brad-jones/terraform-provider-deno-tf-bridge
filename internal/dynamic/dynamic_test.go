@@ -1,4 +1,4 @@
-package provider
+package dynamic
 
 import (
 	"math/big"
@@ -12,7 +12,7 @@ import (
 // TestFromDynamic_Null tests conversion of null dynamic value.
 func TestFromDynamic_Null(t *testing.T) {
 	dynVal := types.DynamicNull()
-	result := fromDynamic(dynVal)
+	result := FromDynamic(dynVal)
 
 	if result != nil {
 		t.Errorf("Expected nil for null dynamic value, got %v", result)
@@ -23,7 +23,7 @@ func TestFromDynamic_Null(t *testing.T) {
 func TestFromDynamic_String(t *testing.T) {
 	stringVal := types.StringValue("test")
 	dynVal := types.DynamicValue(stringVal)
-	result := fromDynamic(dynVal)
+	result := FromDynamic(dynVal)
 
 	if result != "test" {
 		t.Errorf("Expected 'test', got %v", result)
@@ -34,7 +34,7 @@ func TestFromDynamic_String(t *testing.T) {
 func TestFromDynamic_Bool(t *testing.T) {
 	boolVal := types.BoolValue(true)
 	dynVal := types.DynamicValue(boolVal)
-	result := fromDynamic(dynVal)
+	result := FromDynamic(dynVal)
 
 	if result != true {
 		t.Errorf("Expected true, got %v", result)
@@ -46,7 +46,7 @@ func TestFromDynamic_Number(t *testing.T) {
 	bigFloat := big.NewFloat(42.5)
 	numVal := types.NumberValue(bigFloat)
 	dynVal := types.DynamicValue(numVal)
-	result := fromDynamic(dynVal)
+	result := FromDynamic(dynVal)
 
 	if floatResult, ok := result.(float64); !ok {
 		t.Errorf("Expected float64, got %T", result)
@@ -63,7 +63,7 @@ func TestFromDynamic_List(t *testing.T) {
 		types.StringValue("c"),
 	})
 	dynVal := types.DynamicValue(listVal)
-	result := fromDynamic(dynVal)
+	result := FromDynamic(dynVal)
 
 	listResult, ok := result.([]any)
 	if !ok {
@@ -83,7 +83,7 @@ func TestFromDynamic_Map(t *testing.T) {
 		"key2": types.StringValue("value2"),
 	})
 	dynVal := types.DynamicValue(mapVal)
-	result := fromDynamic(dynVal)
+	result := FromDynamic(dynVal)
 
 	mapResult, ok := result.(map[string]any)
 	if !ok {
@@ -111,7 +111,7 @@ func TestFromDynamic_Object(t *testing.T) {
 		},
 	)
 	dynVal := types.DynamicValue(objVal)
-	result := fromDynamic(dynVal)
+	result := FromDynamic(dynVal)
 
 	objResult, ok := result.(map[string]any)
 	if !ok {
@@ -128,7 +128,7 @@ func TestFromDynamic_Object(t *testing.T) {
 
 // TestToDynamic_Nil tests conversion of nil to dynamic value.
 func TestToDynamic_Nil(t *testing.T) {
-	result := toDynamic(nil)
+	result := ToDynamic(nil)
 
 	if !result.IsNull() {
 		t.Error("Expected null dynamic value for nil input")
@@ -137,7 +137,7 @@ func TestToDynamic_Nil(t *testing.T) {
 
 // TestToDynamic_String tests conversion of string to dynamic value.
 func TestToDynamic_String(t *testing.T) {
-	result := toDynamic("test")
+	result := ToDynamic("test")
 
 	if result.IsNull() {
 		t.Error("Expected non-null dynamic value")
@@ -153,7 +153,7 @@ func TestToDynamic_String(t *testing.T) {
 
 // TestToDynamic_Bool tests conversion of bool to dynamic value.
 func TestToDynamic_Bool(t *testing.T) {
-	result := toDynamic(true)
+	result := ToDynamic(true)
 
 	underlying := result.UnderlyingValue()
 	if boolVal, ok := underlying.(types.Bool); !ok {
@@ -165,7 +165,7 @@ func TestToDynamic_Bool(t *testing.T) {
 
 // TestToDynamic_Float tests conversion of float to dynamic value.
 func TestToDynamic_Float(t *testing.T) {
-	result := toDynamic(42.5)
+	result := ToDynamic(42.5)
 
 	underlying := result.UnderlyingValue()
 	if numVal, ok := underlying.(types.Number); !ok {
@@ -184,7 +184,7 @@ func TestToDynamic_Map(t *testing.T) {
 		"key1": "value1",
 		"key2": 42,
 	}
-	result := toDynamic(input)
+	result := ToDynamic(input)
 
 	if result.IsNull() {
 		t.Error("Expected non-null dynamic value")
@@ -199,7 +199,7 @@ func TestToDynamic_Map(t *testing.T) {
 // TestToDynamic_Slice tests conversion of slice to dynamic value.
 func TestToDynamic_Slice(t *testing.T) {
 	input := []any{"a", "b", "c"}
-	result := toDynamic(input)
+	result := ToDynamic(input)
 
 	if result.IsNull() {
 		t.Error("Expected non-null dynamic value")

@@ -1,26 +1,26 @@
-package provider
+package deno
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type denoPermissions struct {
+type Permissions struct {
 	All   bool
 	Allow []string
 	Deny  []string
 }
 
-func (permissions *denoPermissions) mapToDenoPermissionsTF() *denoPermissionsTF {
+func (permissions *Permissions) MapToDenoPermissionsTF() *PermissionsTF {
 	if permissions == nil {
-		return &denoPermissionsTF{
+		return &PermissionsTF{
 			All:   types.BoolValue(false),
 			Allow: types.ListNull(types.StringType),
 			Deny:  types.ListNull(types.StringType),
 		}
 	}
 
-	output := &denoPermissionsTF{
+	output := &PermissionsTF{
 		All: types.BoolValue(permissions.All),
 	}
 
@@ -49,23 +49,23 @@ func (permissions *denoPermissions) mapToDenoPermissionsTF() *denoPermissionsTF 
 	return output
 }
 
-type denoPermissionsTF struct {
+type PermissionsTF struct {
 	All   types.Bool `tfsdk:"all"`
 	Allow types.List `tfsdk:"allow"`
 	Deny  types.List `tfsdk:"deny"`
 }
 
-func (permissions *denoPermissionsTF) mapToDenoPermissions() *denoPermissions {
+func (permissions *PermissionsTF) MapToDenoPermissions() *Permissions {
 	if permissions == nil {
 		// Default permissions, means deno can not perform any IO of any kind.
-		return &denoPermissions{
+		return &Permissions{
 			All:   false,
 			Allow: []string{},
 			Deny:  []string{},
 		}
 	}
 
-	output := &denoPermissions{
+	output := &Permissions{
 		All: permissions.All.ValueBool(),
 	}
 

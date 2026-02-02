@@ -1,23 +1,20 @@
-import { Hono } from "hono";
+import { DatasourceProvider } from "@brad-jones/terraform-provider-denobridge";
 
-const app = new Hono();
+interface Props {
+  value: string;
+}
 
-app.get("/health", (c) => {
-  return c.body(null, 204);
+interface Result {
+  hashedValue: string;
+}
+
+new DatasourceProvider<Props, Result>({
+  async read({ value }) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(value);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashedValue = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    return { hashedValue };
+  },
 });
-
-app.post("/read", async (c) => {
-  const body = await c.req.json();
-  const { value } = body.props;
-
-  // Hash the value with SHA256
-  const encoder = new TextEncoder();
-  const data = encoder.encode(value);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashedValue = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-
-  return c.json({ hashedValue });
-});
-
-export default app satisfies Deno.ServeDefaultExport;

@@ -60,7 +60,7 @@ tasks:
       TF_ACC: 1
       TF_LOG: DEBUG
     cmds:
-      - go test -v ./internal/provider/... {{.CLI_ARGS}}
+      - go test -count=1 -v ./internal/... {{.CLI_ARGS}}
 
   config:generate:
     desc: Generates the Terraform/OpenTofu CLI config file with absolute paths

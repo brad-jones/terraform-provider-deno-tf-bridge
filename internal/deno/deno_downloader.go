@@ -1,4 +1,4 @@
-package provider
+package deno
 
 import (
 	"archive/tar"

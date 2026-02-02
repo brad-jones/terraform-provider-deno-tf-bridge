@@ -1,6 +1,0 @@
-{
-  // This is a JSONC file with comments
-  "compilerOptions": {
-    "lib": ["deno.window"]
-  }
-}

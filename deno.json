@@ -1,6 +1,19 @@
 {
+  "name": "@brad-jones/terraform-provider-denobridge",
+  "version": "0.2.4",
+  "license": "MIT",
+  "publish": {
+    "include": [
+      "lib/**/*.ts",
+      "README.md",
+      "CHANGELOG.md"
+    ]
+  },
+  "exports": "./lib/mod.ts",
   "imports": {
     "@std/streams": "jsr:@std/streams@^1.0.17",
+    "@yieldray/json-rpc-ts": "jsr:@yieldray/json-rpc-ts@^0.2.2",
+    "@zod/zod": "jsr:@zod/zod@^4.3.6",
     "hono": "jsr:@hono/hono@^4.7.0",
     "@std/fs": "jsr:@std/fs@^1.0.8"
   }
