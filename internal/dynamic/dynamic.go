@@ -1,4 +1,4 @@
-package provider
+package dynamic
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func fromDynamic(dynVal types.Dynamic) any {
+func FromDynamic(dynVal types.Dynamic) any {
 	if dynVal.IsNull() || dynVal.IsUnderlyingValueNull() {
 		return nil
 	}
@@ -32,21 +32,21 @@ func fromDynamic(dynVal types.Dynamic) any {
 		elements := v.Elements()
 		result := make([]any, len(elements))
 		for i, elem := range elements {
-			result[i] = fromValue(elem)
+			result[i] = FromValue(elem)
 		}
 		return result
 	case types.Map:
 		elements := v.Elements()
 		result := make(map[string]any)
 		for k, elem := range elements {
-			result[k] = fromValue(elem)
+			result[k] = FromValue(elem)
 		}
 		return result
 	case types.Object:
 		attrs := v.Attributes()
 		result := make(map[string]any)
 		for k, attr := range attrs {
-			result[k] = fromValue(attr)
+			result[k] = FromValue(attr)
 		}
 		return result
 	default:
@@ -54,14 +54,14 @@ func fromDynamic(dynVal types.Dynamic) any {
 	}
 }
 
-func fromValue(in attr.Value) any {
+func FromValue(in attr.Value) any {
 	if in.IsNull() {
 		return nil
 	}
 
 	switch v := in.(type) {
 	case types.Dynamic:
-		return fromDynamic(v)
+		return FromDynamic(v)
 	case types.String:
 		return v.ValueString()
 	case types.Bool:
@@ -77,21 +77,21 @@ func fromValue(in attr.Value) any {
 		elements := v.Elements()
 		result := make([]any, len(elements))
 		for i, elem := range elements {
-			result[i] = fromValue(elem)
+			result[i] = FromValue(elem)
 		}
 		return result
 	case types.Map:
 		elements := v.Elements()
 		result := make(map[string]any)
 		for k, elem := range elements {
-			result[k] = fromValue(elem)
+			result[k] = FromValue(elem)
 		}
 		return result
 	case types.Object:
 		attrs := v.Attributes()
 		result := make(map[string]any)
 		for k, attr := range attrs {
-			result[k] = fromValue(attr)
+			result[k] = FromValue(attr)
 		}
 		return result
 	default:
@@ -99,7 +99,7 @@ func fromValue(in attr.Value) any {
 	}
 }
 
-func toDynamic(value any) types.Dynamic {
+func ToDynamic(value any) types.Dynamic {
 	if value == nil {
 		return types.DynamicNull()
 	}
@@ -137,7 +137,7 @@ func toDynamic(value any) types.Dynamic {
 	case []any:
 		elements := make([]attr.Value, len(v))
 		for i, elem := range v {
-			elements[i] = toDynamic(elem)
+			elements[i] = ToDynamic(elem)
 		}
 		listVal, _ := types.ListValue(types.DynamicType, elements)
 		return types.DynamicValue(listVal)
@@ -146,7 +146,7 @@ func toDynamic(value any) types.Dynamic {
 		elements := make(map[string]attr.Value)
 		attrTypes := make(map[string]attr.Type)
 		for k, elem := range v {
-			dynValue := toDynamic(elem)
+			dynValue := ToDynamic(elem)
 			elements[k] = dynValue
 			attrTypes[k] = types.DynamicType
 		}

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/brad-jones/terraform-provider-denobridge/internal/deno"
+	"github.com/brad-jones/terraform-provider-denobridge/internal/dynamic"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -31,11 +33,11 @@ type denoBridgeEphemeralResource struct {
 
 // denoBridgeEphemeralResourceModel maps the resource schema data.
 type denoBridgeEphemeralResourceModel struct {
-	Path        types.String       `tfsdk:"path"`
-	Props       types.Dynamic      `tfsdk:"props"`
-	Result      types.Dynamic      `tfsdk:"result"`
-	ConfigFile  types.String       `tfsdk:"config_file"`
-	Permissions *denoPermissionsTF `tfsdk:"permissions"`
+	Path        types.String        `tfsdk:"path"`
+	Props       types.Dynamic       `tfsdk:"props"`
+	Result      types.Dynamic       `tfsdk:"result"`
+	ConfigFile  types.String        `tfsdk:"config_file"`
+	Permissions *deno.PermissionsTF `tfsdk:"permissions"`
 }
 
 func (r *denoBridgeEphemeralResource) Metadata(_ context.Context, req ephemeral.MetadataRequest, resp *ephemeral.MetadataResponse) {
@@ -44,7 +46,7 @@ func (r *denoBridgeEphemeralResource) Metadata(_ context.Context, req ephemeral.
 
 func (r *denoBridgeEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaRequest, resp *ephemeral.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Bridges the terraform-plugin-framework Ephemeral Resource to a Deno HTTP Server.",
+		Description: "Bridges the terraform-plugin-framework Ephemeral Resource to a Deno script.",
 		Attributes: map[string]schema.Attribute{
 			"path": schema.StringAttribute{
 				Description: "Path to the Deno script to execute.",
@@ -114,44 +116,29 @@ func (r *denoBridgeEphemeralResource) Open(ctx context.Context, req ephemeral.Op
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientEphemeralResource(
 		r.providerConfig.DenoBinaryPath,
 		data.Path.ValueString(),
 		data.ConfigFile.ValueString(),
-		data.Permissions.mapToDenoPermissions(),
+		data.Permissions.MapToDenoPermissions(),
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
 	// Call the open endpoint
-	var response *struct {
-		Result  any    `json:"result"`
-		RenewAt *int64 `json:"renewAt,omitempty"`
-		Private *any   `json:"private,omitempty"`
-	}
-	if err := client.C().
-		Post("/open").
-		SetBody(map[string]any{"props": fromDynamic(data.Props)}).
-		Do(ctx).
-		Into(&response); err != nil {
+	response, err := c.Open(ctx, &deno.OpenRequest{Props: dynamic.FromDynamic(data.Props)})
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to open data",
 			fmt.Sprintf("Could not open data from Deno script: %s", err.Error()),
 		)
-		return
 	}
 
 	// Set a renew time if provided
@@ -177,7 +164,7 @@ func (r *denoBridgeEphemeralResource) Open(ctx context.Context, req ephemeral.Op
 		"DenoBinaryPath":  r.providerConfig.DenoBinaryPath,
 		"DenoScriptPath":  data.Path.ValueString(),
 		"DenoConfigPath":  data.ConfigFile.ValueString(),
-		"DenoPermissions": data.Permissions.mapToDenoPermissions(),
+		"DenoPermissions": data.Permissions.MapToDenoPermissions(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -189,7 +176,7 @@ func (r *denoBridgeEphemeralResource) Open(ctx context.Context, req ephemeral.Op
 	resp.Private.SetKey(ctx, "config", configJSON)
 
 	// Set result
-	data.Result = toDynamic(response.Result)
+	data.Result = dynamic.ToDynamic(response.Result)
 	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
 }
 
@@ -204,7 +191,7 @@ func (r *denoBridgeEphemeralResource) Renew(ctx context.Context, req ephemeral.R
 		DenoBinaryPath  string
 		DenoScriptPath  string
 		DenoConfigPath  string
-		DenoPermissions *denoPermissions
+		DenoPermissions *deno.Permissions
 	}
 	err := json.Unmarshal(privateConfigBytes, &privateConfig)
 	if err != nil {
@@ -221,7 +208,7 @@ func (r *denoBridgeEphemeralResource) Renew(ctx context.Context, req ephemeral.R
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	var privateData any
+	var privateData *any
 	if len(privateDataBytes) > 0 {
 		err = json.Unmarshal(privateDataBytes, &privateData)
 		if err != nil {
@@ -234,57 +221,28 @@ func (r *denoBridgeEphemeralResource) Renew(ctx context.Context, req ephemeral.R
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientEphemeralResource(
 		privateConfig.DenoBinaryPath,
 		privateConfig.DenoScriptPath,
 		privateConfig.DenoConfigPath,
 		privateConfig.DenoPermissions,
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
 	// Call the renew endpoint
-	httpResp := client.C().
-		Post("/renew").
-		SetBody(privateData).
-		Do(ctx)
-
-	// If endpoint not implemented, that's OK - just return
-	if httpResp.StatusCode == 404 {
-		return
-	}
-
-	// Check for other errors
-	if httpResp.Err != nil {
+	response, err := c.Renew(ctx, &deno.RenewRequest{Private: privateData})
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to renew",
-			fmt.Sprintf("Could not renew data from Deno script: %s", httpResp.Err.Error()),
-		)
-		return
-	}
-
-	// Parse response
-	var response *struct {
-		RenewAt *int64 `json:"renewAt,omitempty"`
-		Private *any   `json:"private,omitempty"`
-	}
-	if err := httpResp.Into(&response); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to parse renew response",
-			fmt.Sprintf("Could not parse response from Deno script: %s", err.Error()),
+			fmt.Sprintf("Could not renew data from Deno script: %s", err.Error()),
 		)
 		return
 	}
@@ -319,7 +277,7 @@ func (r *denoBridgeEphemeralResource) Close(ctx context.Context, req ephemeral.C
 		DenoBinaryPath  string
 		DenoScriptPath  string
 		DenoConfigPath  string
-		DenoPermissions *denoPermissions
+		DenoPermissions *deno.Permissions
 	}
 	err := json.Unmarshal(privateConfigBytes, &privateConfig)
 	if err != nil {
@@ -336,7 +294,7 @@ func (r *denoBridgeEphemeralResource) Close(ctx context.Context, req ephemeral.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	var privateData any
+	var privateData *any
 	if len(privateDataBytes) > 0 {
 		err = json.Unmarshal(privateDataBytes, &privateData)
 		if err != nil {
@@ -349,44 +307,27 @@ func (r *denoBridgeEphemeralResource) Close(ctx context.Context, req ephemeral.C
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientEphemeralResource(
 		privateConfig.DenoBinaryPath,
 		privateConfig.DenoScriptPath,
 		privateConfig.DenoConfigPath,
 		privateConfig.DenoPermissions,
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
 	// Call the close endpoint
-	httpResp := client.C().
-		Post("/close").
-		SetBody(privateData).
-		Do(ctx)
-
-	// If endpoint not implemented, that's OK - just return
-	if httpResp.StatusCode == 404 {
-		return
-	}
-
-	// Check for other errors
-	if httpResp.Err != nil {
+	if err := c.Close(ctx, &deno.CloseRequest{Private: privateData}); err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to close",
-			fmt.Sprintf("Could not close data from Deno script: %s", httpResp.Err.Error()),
+			fmt.Sprintf("Could not close data from Deno script: %s", err.Error()),
 		)
 		return
 	}

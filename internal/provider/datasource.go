@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/brad-jones/terraform-provider-denobridge/internal/deno"
+	"github.com/brad-jones/terraform-provider-denobridge/internal/dynamic"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -27,11 +29,11 @@ type denoBridgeDataSource struct {
 
 // denoBridgeDataSourceModel maps the data source schema data.
 type denoBridgeDataSourceModel struct {
-	Path        types.String       `tfsdk:"path"`
-	Props       types.Dynamic      `tfsdk:"props"`
-	Result      types.Dynamic      `tfsdk:"result"`
-	ConfigFile  types.String       `tfsdk:"config_file"`
-	Permissions *denoPermissionsTF `tfsdk:"permissions"`
+	Path        types.String        `tfsdk:"path"`
+	Props       types.Dynamic       `tfsdk:"props"`
+	Result      types.Dynamic       `tfsdk:"result"`
+	ConfigFile  types.String        `tfsdk:"config_file"`
+	Permissions *deno.PermissionsTF `tfsdk:"permissions"`
 }
 
 // Metadata returns the data source type name.
@@ -42,7 +44,7 @@ func (d *denoBridgeDataSource) Metadata(_ context.Context, req datasource.Metada
 // Schema defines the schema for the data source.
 func (d *denoBridgeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Bridges the terraform-plugin-framework Datasource to a Deno HTTP Server.",
+		Description: "Bridges the terraform-plugin-framework Datasource to a Deno script.",
 		Attributes: map[string]schema.Attribute{
 			"path": schema.StringAttribute{
 				Description: "Path to the Deno script to execute.",
@@ -114,43 +116,32 @@ func (d *denoBridgeDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientDatasource(
 		d.providerConfig.DenoBinaryPath,
 		state.Path.ValueString(),
 		state.ConfigFile.ValueString(),
-		state.Permissions.mapToDenoPermissions(),
+		state.Permissions.MapToDenoPermissions(),
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
-	// Call the read endpoint
-	var result any
-	if err := client.C().
-		Post("/read").
-		SetBody(map[string]any{"props": fromDynamic(state.Props)}).
-		Do(ctx).
-		Into(&result); err != nil {
+	// Call the read JSON-RPC method
+	response, err := c.Read(ctx, &deno.ReadRequest{Props: dynamic.FromDynamic(state.Props)})
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to read data",
 			fmt.Sprintf("Could not read data from Deno script: %s", err.Error()),
 		)
-		return
 	}
 
 	// Set state
-	state.Result = toDynamic(result)
+	state.Result = dynamic.ToDynamic(response.Result)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

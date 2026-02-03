@@ -1,4 +1,4 @@
-package provider
+package deno
 
 import (
 	"testing"
@@ -9,8 +9,8 @@ import (
 
 // TestDenoPermissions_MapToDenoPermissions_Nil tests mapping nil permissions.
 func TestDenoPermissions_MapToDenoPermissions_Nil(t *testing.T) {
-	var perms *denoPermissionsTF = nil
-	result := perms.mapToDenoPermissions()
+	var perms *PermissionsTF = nil
+	result := perms.MapToDenoPermissions()
 
 	if result == nil {
 		t.Fatal("Expected non-nil result")
@@ -31,12 +31,12 @@ func TestDenoPermissions_MapToDenoPermissions_Nil(t *testing.T) {
 
 // TestDenoPermissions_MapToDenoPermissions_AllPermissions tests mapping with all permissions.
 func TestDenoPermissions_MapToDenoPermissions_AllPermissions(t *testing.T) {
-	perms := &denoPermissionsTF{
+	perms := &PermissionsTF{
 		All:   types.BoolValue(true),
 		Allow: types.ListNull(types.StringType),
 		Deny:  types.ListNull(types.StringType),
 	}
-	result := perms.mapToDenoPermissions()
+	result := perms.MapToDenoPermissions()
 
 	if !result.All {
 		t.Error("Expected All to be true")
@@ -51,12 +51,12 @@ func TestDenoPermissions_MapToDenoPermissions_AllowList(t *testing.T) {
 		types.StringValue("write"),
 	})
 
-	perms := &denoPermissionsTF{
+	perms := &PermissionsTF{
 		All:   types.BoolValue(false),
 		Allow: allowList,
 		Deny:  types.ListNull(types.StringType),
 	}
-	result := perms.mapToDenoPermissions()
+	result := perms.MapToDenoPermissions()
 
 	if result.All {
 		t.Error("Expected All to be false")
@@ -81,12 +81,12 @@ func TestDenoPermissions_MapToDenoPermissions_DenyList(t *testing.T) {
 		types.StringValue("env"),
 	})
 
-	perms := &denoPermissionsTF{
+	perms := &PermissionsTF{
 		All:   types.BoolValue(false),
 		Allow: types.ListNull(types.StringType),
 		Deny:  denyList,
 	}
-	result := perms.mapToDenoPermissions()
+	result := perms.MapToDenoPermissions()
 
 	expectedDeny := []string{"write", "env"}
 	if len(result.Deny) != len(expectedDeny) {
@@ -111,12 +111,12 @@ func TestDenoPermissions_MapToDenoPermissions_BothLists(t *testing.T) {
 		types.StringValue("write"),
 	})
 
-	perms := &denoPermissionsTF{
+	perms := &PermissionsTF{
 		All:   types.BoolValue(false),
 		Allow: allowList,
 		Deny:  denyList,
 	}
-	result := perms.mapToDenoPermissions()
+	result := perms.MapToDenoPermissions()
 
 	if len(result.Allow) != 2 {
 		t.Errorf("Expected 2 allow items, got %d", len(result.Allow))
@@ -129,12 +129,12 @@ func TestDenoPermissions_MapToDenoPermissions_BothLists(t *testing.T) {
 
 // TestDenoPermissions_MapToDenoPermissions_NullLists tests mapping with null lists.
 func TestDenoPermissions_MapToDenoPermissions_NullLists(t *testing.T) {
-	perms := &denoPermissionsTF{
+	perms := &PermissionsTF{
 		All:   types.BoolValue(false),
 		Allow: types.ListNull(types.StringType),
 		Deny:  types.ListNull(types.StringType),
 	}
-	result := perms.mapToDenoPermissions()
+	result := perms.MapToDenoPermissions()
 
 	if len(result.Allow) > 0 {
 		t.Errorf("Expected empty or nil Allow list for null value, got %d items", len(result.Allow))

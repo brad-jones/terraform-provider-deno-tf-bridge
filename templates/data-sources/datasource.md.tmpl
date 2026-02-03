@@ -10,6 +10,8 @@ description: |-
 
 {{ .Description | trimspace }}
 
+_Reference: <https://developer.hashicorp.com/terraform/plugin/framework/data-sources>_
+
 {{ if .HasExamples -}}
 ## Example Usage
 
@@ -47,131 +49,52 @@ The [` + "`" + `terraform import` + "`" + ` command](https://developer.hashicorp
 {{codefile "shell" .ImportFile }}
 {{- end }}
 
-## OpenAPI Specification
+## TypeScript Implementation
 
-HTTP API contract for Terraform `denobridge_datasource` implementations.
-
-This specification defines the endpoints that a Deno TypeScript script must implement
-to provide data source functionality in Terraform.
-
-Data sources are read-only and are used to fetch external data that can be used
-elsewhere in Terraform configuration. The provider will start your Deno script
-as an HTTP server and call the `/read` endpoint to fetch data.
-
-```yaml
-openapi: 3.1.0
-info:
-  title: DenoBridge Datasource API
-  version: 1.0.0
-
-servers:
-  - url: http://localhost:{port}
-    description: Local Deno HTTP server (port assigned dynamically)
-    variables:
-      port:
-        default: "0"
-        description: Port dynamically assigned by the provider
-
-paths:
-  /health:
-    get:
-      summary: Health check endpoint
-      description: |
-        The provider polls this endpoint until it receives a successful response
-        before attempting to call any other endpoints.
-      responses:
-        "204":
-          description: |
-            Server is ready to accept requests.
-            NB: 200 is also accepted for flexibility.
-
-  /read:
-    post:
-      summary: Fetch data from the data source
-      description: |
-        Retrieves data based on the provided input properties.
-
-        Data sources are read-only and do not create or modify any infrastructure.
-        They are evaluated during the plan phase and used to fetch external data
-        that can be referenced in other Terraform resources.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - props
-              properties:
-                props:
-                  type: object
-                  description: Input properties that specify what data to fetch
-                  additionalProperties: true
-            example:
-              props:
-                value: "example-string"
-      responses:
-        "200":
-          description: Data fetched successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                description: The fetched data that will be available to Terraform
-                additionalProperties: true
-              example:
-                hashedValue: "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"
-        "4XX":
-          description: Client error during data fetch
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "5XX":
-          description: Server error during data fetch
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error message describing what went wrong
-```
-
-## Example Server
-
-This shows how one might fulfil the above OpenAPI specification.
-
-The script **MUST** export a `default` export that satisfies `Deno.ServeDefaultExport`.
-So that it can be executed with [`deno serve`](https://docs.deno.com/runtime/reference/cli/serve/).
-
-_NB: Using Hono is not a requirement, your welcome to use your favorite HTTP server library._
+Simply create a new instance of the `DatasourceProvider`.
 
 ```ts
-import { Hono } from "jsr:@hono/hono";
+import { DatasourceProvider } from "@brad-jones/terraform-provider-denobridge";
 
-const app = new Hono();
+interface Props {
+  query: string;
+  recordType: "A" | "AAAA" | "ANAME" | "CNAME" | "NS" | "PTR";
+}
 
-app.get("/health", (c) => {
-  return c.body(null, 204);
+interface Result {
+  ips: string[];
+}
+
+new DatasourceProvider<Props, Result>({
+  async read({ query, recordType }) {
+    return {
+      ips: await Deno.resolveDns(query, recordType, {
+        nameServer: { ipAddr: "1.1.1.1", port: 53 },
+      }),
+    };
+  },
 });
-
-app.post("/read", async (c) => {
-  const body = await c.req.json();
-  const { query, recordType } = body.props;
-  const result = await Deno.resolveDns(query, recordType, {
-    nameServer: { ipAddr: "1.1.1.1", port: 53 },
-  });
-  return c.json(result);
-});
-
-export default app satisfies Deno.ServeDefaultExport;
 ```
 
-_read more: <https://developer.hashicorp.com/terraform/plugin/framework/data-sources>_
+### Zod Validation
+
+Alternatively you can use the `ZodDatasourceProvider`, this will ensure all
+input & outputs to & from your TypeScript provider are validated at runtime.
+
+```ts
+import { z } from "jsr:@zod/zod";
+import { ZodDatasourceProvider } from "@brad-jones/terraform-provider-denobridge";
+
+const Props = z.object({
+  query: z.string(),
+  recordType: z.enum(["A", "AAAA", "ANAME", "CNAME", "NS", "PTR"]),
+});
+
+const Result = z.object({
+  ips: z.array(z.string()),
+});
+
+new ZodDatasourceProvider(Props, Result, {
+  // as above but validated...
+});
+```

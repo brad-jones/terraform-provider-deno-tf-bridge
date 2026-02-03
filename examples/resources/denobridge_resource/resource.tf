@@ -1,6 +1,6 @@
 resource "denobridge_resource" "quote_of_the_day" {
   # The path to the underlying deno script.
-  # Remote HTTP URLs also supported! Any valid value that `deno serve` will accept.
+  # Remote HTTP URLs also supported! Any valid value that `deno run` will accept.
   path = "${path.module}/resource.ts"
 
   # The inputs required by the underlying deno script to read the data.

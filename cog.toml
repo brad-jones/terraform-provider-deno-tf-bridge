@@ -5,7 +5,13 @@ tag_prefix = "v"
 branch_whitelist = ["master"]
 from_latest_tag = true
 
-post_bump_hooks = ["task publish VERSION={{version}}"]
+pre_bump_hooks = [
+  "task package VERSION={{version}}",
+]
+
+post_bump_hooks = [
+  "task publish VERSION={{version}}",
+]
 
 [commit_types]
 build = { bump_patch = true }

@@ -1,24 +1,15 @@
-import { Hono } from "jsr:@hono/hono";
-import { streamText } from "jsr:@hono/hono/streaming";
+import { ActionProvider } from "@brad-jones/terraform-provider-denobridge";
 
-const app = new Hono();
+interface Props {
+  destination: string;
+}
 
-app.get("/health", (c) => {
-  return c.body(null, 204);
+new ActionProvider<Props>({
+  async invoke({ destination }, progressCallback) {
+    await progressCallback(`launching rocket to ${destination}`);
+    await progressCallback(`3...`);
+    await progressCallback(`2...`);
+    await progressCallback(`1...`);
+    await progressCallback(`blast off`);
+  },
 });
-
-app.post("/invoke", async (c) => {
-  const body = await c.req.json();
-  const { destination } = body.props;
-  c.header("Content-Type", "application/jsonl");
-
-  return streamText(c, async (stream) => {
-    await stream.writeln(JSON.stringify({ message: `launching rocket to ${destination}` }));
-    await stream.writeln(JSON.stringify({ message: "3..." }));
-    await stream.writeln(JSON.stringify({ message: "2..." }));
-    await stream.writeln(JSON.stringify({ message: "1..." }));
-    await stream.writeln(JSON.stringify({ message: "blast off" }));
-  });
-});
-
-export default app satisfies Deno.ServeDefaultExport;

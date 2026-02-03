@@ -1,13 +1,11 @@
-import { Hono } from "hono";
+import { EphemeralResourceProvider } from "@brad-jones/terraform-provider-denobridge";
 
-const app = new Hono();
+interface Result {
+  uuid: string;
+}
 
-app.get("/health", (c) => {
-  return c.body(null, 204);
+new EphemeralResourceProvider<undefined, Result>({
+  open(_props) {
+    return Promise.resolve({ result: { uuid: crypto.randomUUID() } });
+  },
 });
-
-app.post("/open", (c) => {
-  return c.json({ result: { uuid: crypto.randomUUID() } });
-});
-
-export default app satisfies Deno.ServeDefaultExport;

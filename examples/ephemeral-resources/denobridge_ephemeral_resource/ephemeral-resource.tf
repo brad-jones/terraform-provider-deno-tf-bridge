@@ -1,6 +1,6 @@
 ephemeral "denobridge_ephemeral_resource" "uuid" {
   # The path to the underlying deno script.
-  # Remote HTTP URLs also supported! Any valid value that `deno serve` will accept.
+  # Remote HTTP URLs also supported! Any valid value that `deno run` will accept.
   path = "${path.module}/ephemeral-resource.ts"
 
   # The inputs required by the underlying deno script to read the data.

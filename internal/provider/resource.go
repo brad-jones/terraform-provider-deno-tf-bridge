@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/brad-jones/terraform-provider-denobridge/internal/deno"
+	"github.com/brad-jones/terraform-provider-denobridge/internal/dynamic"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -33,12 +35,12 @@ type denoBridgeResource struct {
 
 // denoBridgeResourceModel maps the resource schema data.
 type denoBridgeResourceModel struct {
-	ID          types.String       `tfsdk:"id"`
-	Path        types.String       `tfsdk:"path"`
-	Props       types.Dynamic      `tfsdk:"props"`
-	State       types.Dynamic      `tfsdk:"state"`
-	ConfigFile  types.String       `tfsdk:"config_file"`
-	Permissions *denoPermissionsTF `tfsdk:"permissions"`
+	ID          types.String        `tfsdk:"id"`
+	Path        types.String        `tfsdk:"path"`
+	Props       types.Dynamic       `tfsdk:"props"`
+	State       types.Dynamic       `tfsdk:"state"`
+	ConfigFile  types.String        `tfsdk:"config_file"`
+	Permissions *deno.PermissionsTF `tfsdk:"permissions"`
 }
 
 // Metadata returns the resource type name.
@@ -49,7 +51,7 @@ func (r *denoBridgeResource) Metadata(_ context.Context, req resource.MetadataRe
 // Schema defines the schema for the resource.
 func (r *denoBridgeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Bridges the terraform-plugin-framework Resource to a Deno HTTP Server.",
+		Description: "Bridges the terraform-plugin-framework Resource to a Deno script.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Unique identifier for the resource.",
@@ -128,38 +130,25 @@ func (r *denoBridgeResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientResource(
 		r.providerConfig.DenoBinaryPath,
 		plan.Path.ValueString(),
 		plan.ConfigFile.ValueString(),
-		plan.Permissions.mapToDenoPermissions(),
+		plan.Permissions.MapToDenoPermissions(),
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
 	// Call the create endpoint
-	var response *struct {
-		ID    string          `json:"id"`
-		State *map[string]any `json:"state"`
-	}
-	if err := client.C().
-		Post("/create").
-		SetBody(map[string]any{"props": fromDynamic(plan.Props)}).
-		Do(ctx).
-		Into(&response); err != nil {
+	response, err := c.Create(ctx, &deno.CreateRequest{Props: dynamic.FromDynamic(plan.Props)})
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create resource",
 			fmt.Sprintf("Could not create resource via Deno script: %s", err.Error()),
@@ -170,7 +159,7 @@ func (r *denoBridgeResource) Create(ctx context.Context, req resource.CreateRequ
 	// Set state
 	plan.ID = types.StringValue(response.ID)
 	if response.State != nil {
-		plan.State = toDynamic(response.State)
+		plan.State = dynamic.ToDynamic(response.State)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
@@ -186,39 +175,25 @@ func (r *denoBridgeResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientResource(
 		r.providerConfig.DenoBinaryPath,
 		state.Path.ValueString(),
 		state.ConfigFile.ValueString(),
-		state.Permissions.mapToDenoPermissions(),
+		state.Permissions.MapToDenoPermissions(),
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
 	// Call the read endpoint
-	var response *struct {
-		Props  map[string]any  `json:"props"`
-		State  *map[string]any `json:"state"`
-		Exists *bool           `json:"exists"`
-	}
-	if err := client.C().
-		Post("/read").
-		SetBody(map[string]any{"id": state.ID.ValueString(), "props": fromDynamic(state.Props)}).
-		Do(ctx).
-		Into(&response); err != nil {
+	response, err := c.Read(ctx, &deno.CreateReadRequest{ID: state.ID.ValueString(), Props: dynamic.FromDynamic(state.Props)})
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to read resource",
 			fmt.Sprintf("Could not read resource via Deno script: %s", err.Error()),
@@ -232,9 +207,9 @@ func (r *denoBridgeResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Set refreshed state
-	state.Props = toDynamic(response.Props)
+	state.Props = dynamic.ToDynamic(response.Props)
 	if response.State != nil {
-		state.State = toDynamic(response.State)
+		state.State = dynamic.ToDynamic(response.State)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -258,42 +233,30 @@ func (r *denoBridgeResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientResource(
 		r.providerConfig.DenoBinaryPath,
 		plan.Path.ValueString(),
 		plan.ConfigFile.ValueString(),
-		plan.Permissions.mapToDenoPermissions(),
+		plan.Permissions.MapToDenoPermissions(),
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
 	// Call the update endpoint
-	var response *struct {
-		State *map[string]any `json:"state"`
-	}
-	if err := client.C().
-		Post("/update").
-		SetBody(map[string]any{
-			"id":           state.ID.ValueString(),
-			"nextProps":    fromDynamic(plan.Props),
-			"currentProps": fromDynamic(state.Props),
-			"currentState": fromDynamic(state.State),
-		}).
-		Do(ctx).
-		Into(&response); err != nil {
+	response, err := c.Update(ctx, &deno.UpdateRequest{
+		ID:           state.ID.ValueString(),
+		NextProps:    dynamic.FromDynamic(plan.Props),
+		CurrentProps: dynamic.FromDynamic(state.Props),
+		CurrentState: dynamic.FromDynamic(state.State),
+	})
+	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to update resource",
 			fmt.Sprintf("Could not update resource via Deno script: %s", err.Error()),
@@ -306,7 +269,7 @@ func (r *denoBridgeResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Set updated state
 	if response.State != nil {
-		plan.State = toDynamic(response.State)
+		plan.State = dynamic.ToDynamic(response.State)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
@@ -322,33 +285,28 @@ func (r *denoBridgeResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientResource(
 		r.providerConfig.DenoBinaryPath,
 		state.Path.ValueString(),
 		state.ConfigFile.ValueString(),
-		state.Permissions.mapToDenoPermissions(),
+		state.Permissions.MapToDenoPermissions(),
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
 	// Call the delete endpoint
-	if err := client.C().
-		Post("/delete").
-		SetBody(map[string]any{"id": state.ID.ValueString(), "props": fromDynamic(state.Props), "state": fromDynamic(state.State)}).
-		Do(ctx).Err; err != nil {
+	if err := c.Delete(ctx, &deno.DeleteRequest{
+		ID:    state.ID.ValueString(),
+		Props: dynamic.FromDynamic(state.Props),
+		State: dynamic.FromDynamic(state.State),
+	}); err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to delete resource",
 			fmt.Sprintf("Could not delete resource via Deno script: %s", err.Error()),
@@ -389,7 +347,7 @@ func (r *denoBridgeResource) ModifyPlan(ctx context.Context, req resource.Modify
 	// Otherwise for delete we get the details from the existing state.
 	var denoScriptPath string
 	var denoConfigPath string
-	var denoPermissions *denoPermissionsTF
+	var denoPermissions *deno.PermissionsTF
 	if plan != nil {
 		denoScriptPath = plan.Path.ValueString()
 		denoConfigPath = plan.ConfigFile.ValueString()
@@ -409,32 +367,26 @@ func (r *denoBridgeResource) ModifyPlan(ctx context.Context, req resource.Modify
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientResource(
 		r.providerConfig.DenoBinaryPath,
 		denoScriptPath,
 		denoConfigPath,
-		denoPermissions.mapToDenoPermissions(),
+		denoPermissions.MapToDenoPermissions(),
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
 	// Build the request payload
-	id := ""
+	var id *string
 	if state != nil {
-		id = state.ID.ValueString()
+		id = state.ID.ValueStringPointer()
 	}
 	planType := ""
 	var nextProps any
@@ -442,82 +394,53 @@ func (r *denoBridgeResource) ModifyPlan(ctx context.Context, req resource.Modify
 	var currentState any
 	if plan != nil && state == nil {
 		planType = "create"
-		nextProps = fromDynamic(plan.Props)
+		nextProps = dynamic.FromDynamic(plan.Props)
 	}
 	if plan != nil && state != nil {
 		planType = "update"
-		nextProps = fromDynamic(plan.Props)
-		currentProps = fromDynamic(state.Props)
-		currentState = fromDynamic(state.State)
+		nextProps = dynamic.FromDynamic(plan.Props)
+		currentProps = dynamic.FromDynamic(state.Props)
+		currentState = dynamic.FromDynamic(state.State)
 	}
 	if plan == nil && state != nil {
 		planType = "delete"
-		currentProps = fromDynamic(state.Props)
-		currentState = fromDynamic(state.State)
-	}
-	requestPayload := map[string]any{
-		"id":       id,
-		"planType": planType,
-	}
-	if nextProps != nil {
-		requestPayload["nextProps"] = nextProps
-	}
-	if currentProps != nil {
-		requestPayload["currentProps"] = currentProps
-		requestPayload["currentState"] = currentState
+		currentProps = dynamic.FromDynamic(state.Props)
+		currentState = dynamic.FromDynamic(state.State)
 	}
 
-	// Call the /modify-plan endpoint (if it exists) with full state and plan information
-	response := client.C().Post("/modify-plan").SetBody(requestPayload).Do(ctx)
-
-	// Check for a Not Content response - this just means the script purposefully elected to take no additional action
-	if response.StatusCode == 204 {
+	response, err := c.ModifyPlan(ctx, &deno.ModifyPlanRequest{
+		ID:           id,
+		PlanType:     planType,
+		NextProps:    nextProps,
+		CurrentProps: currentProps,
+		CurrentState: currentState,
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to modify the plan", err.Error())
 		return
 	}
 
-	// Check if it's a 404 - that's expected for scripts that don't implement /modify-plan
-	if response.StatusCode == 404 {
-		return
-	}
-
-	// Otherwise check for any other types of errors
-	if response.Err != nil {
-		resp.Diagnostics.AddError("POST /modify-plan failed", response.Err.Error())
-		return
-	}
-
-	// Parse the response payload
-	var responsePayload *struct {
-		ModifiedProps       *map[string]any `json:"modifiedProps"`
-		RequiresReplacement bool            `json:"requiresReplacement"`
-		Diagnostics         *[]struct {
-			Severity string  `json:"severity"`
-			Summary  string  `json:"summary"`
-			Detail   string  `json:"detail"`
-			PropName *string `json:"propName"`
-		} `json:"diagnostics"`
-	}
-	if err := response.Into(&responsePayload); err != nil {
-		resp.Diagnostics.AddError("POST /modify-plan failed to parse responsePayload", response.Err.Error())
+	// Bail out if there is nothing to modify
+	if response == nil || response.NoChanges != nil && *response.NoChanges {
 		return
 	}
 
 	// Handle modified props - allows the script to modify the planned properties
-	if responsePayload.ModifiedProps != nil {
-		plan.Props = toDynamic(responsePayload.ModifiedProps)
+	if response.ModifiedProps != nil {
+		plan.Props = dynamic.ToDynamic(response.ModifiedProps)
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 
 	// Handle requiresReplacement - instructing tf to do a create then delete instead of an update
-	if responsePayload.RequiresReplacement {
+	if response.RequiresReplacement != nil && *response.RequiresReplacement {
 		resp.RequiresReplace = append(resp.RequiresReplace, path.Root("props"))
 	}
 
 	// Handle diagnostics - allows the script to add warnings or errors
 	// Mainly for use with the Resource Destroy Plan Diagnostics workflow.
 	// see: https://developer.hashicorp.com/terraform/plugin/framework/resources/plan-modification#resource-destroy-plan-diagnostics
-	if responsePayload.Diagnostics != nil {
-		for _, diag := range *responsePayload.Diagnostics {
+	if response.Diagnostics != nil {
+		for _, diag := range *response.Diagnostics {
 			switch diag.Severity {
 			case "error":
 				if diag.PropName != nil {
@@ -542,11 +465,11 @@ func (r *denoBridgeResource) ModifyPlan(ctx context.Context, req resource.Modify
 // needed to uniquely identify the resource (resource-dependent).
 func (r *denoBridgeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	var importConfig struct {
-		ID          string           `json:"id"`
-		Path        string           `json:"path"`
-		Props       *map[string]any  `json:"props,omitempty"`
-		ConfigFile  *string          `json:"config_file,omitempty"`
-		Permissions *denoPermissions `json:"permissions,omitempty"`
+		ID          string            `json:"id"`
+		Path        string            `json:"path"`
+		Props       *map[string]any   `json:"props,omitempty"`
+		ConfigFile  *string           `json:"config_file,omitempty"`
+		Permissions *deno.Permissions `json:"permissions,omitempty"`
 	}
 	err := json.Unmarshal([]byte(req.ID), &importConfig)
 	if err != nil {
@@ -559,7 +482,7 @@ func (r *denoBridgeResource) ImportState(ctx context.Context, req resource.Impor
 
 	var props types.Dynamic
 	if importConfig.Props != nil {
-		props = toDynamic(importConfig.Props)
+		props = dynamic.ToDynamic(importConfig.Props)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, denoBridgeResourceModel{
@@ -567,6 +490,6 @@ func (r *denoBridgeResource) ImportState(ctx context.Context, req resource.Impor
 		Path:        types.StringValue(importConfig.Path),
 		Props:       props,
 		ConfigFile:  types.StringPointerValue(importConfig.ConfigFile),
-		Permissions: importConfig.Permissions.mapToDenoPermissionsTF(),
+		Permissions: importConfig.Permissions.MapToDenoPermissionsTF(),
 	})...)
 }

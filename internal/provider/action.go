@@ -1,12 +1,11 @@
 package provider
 
 import (
-	"bufio"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 
+	"github.com/brad-jones/terraform-provider-denobridge/internal/deno"
+	"github.com/brad-jones/terraform-provider-denobridge/internal/dynamic"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,10 +29,10 @@ type denoBridgeAction struct {
 
 // denoBridgeActionModel maps the action schema data.
 type denoBridgeActionModel struct {
-	Path        types.String       `tfsdk:"path"`
-	Props       types.Dynamic      `tfsdk:"props"`
-	ConfigFile  types.String       `tfsdk:"config_file"`
-	Permissions *denoPermissionsTF `tfsdk:"permissions"`
+	Path        types.String        `tfsdk:"path"`
+	Props       types.Dynamic       `tfsdk:"props"`
+	ConfigFile  types.String        `tfsdk:"config_file"`
+	Permissions *deno.PermissionsTF `tfsdk:"permissions"`
 }
 
 func (a *denoBridgeAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
@@ -42,7 +41,7 @@ func (a *denoBridgeAction) Metadata(ctx context.Context, req action.MetadataRequ
 
 func (a *denoBridgeAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Bridges the terraform-plugin-framework Action to a Deno HTTP Server.",
+		Description: "Bridges the terraform-plugin-framework Action to a Deno script.",
 		Attributes: map[string]schema.Attribute{
 			"path": schema.StringAttribute{
 				Description: "Path to the Deno script to execute.",
@@ -107,88 +106,26 @@ func (a *denoBridgeAction) Invoke(ctx context.Context, req action.InvokeRequest,
 	}
 
 	// Start the Deno server
-	client := NewDenoClient(
+	c := deno.NewDenoClientAction(
 		a.providerConfig.DenoBinaryPath,
 		data.Path.ValueString(),
 		data.ConfigFile.ValueString(),
-		data.Permissions.mapToDenoPermissions(),
+		data.Permissions.MapToDenoPermissions(),
+		resp,
 	)
-	if err := client.Start(ctx); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to start Deno server",
-			fmt.Sprintf("Could not start Deno HTTP server: %s", err.Error()),
-		)
+	if err := c.Client.Start(ctx); err != nil {
+		resp.Diagnostics.AddError("Failed to start Deno", err.Error())
 		return
 	}
 	defer func() {
-		if err := client.Stop(); err != nil {
-			resp.Diagnostics.AddWarning(
-				"Failed to stop Deno server",
-				fmt.Sprintf("Could not stop Deno HTTP server: %s", err.Error()),
-			)
+		if err := c.Client.Stop(); err != nil {
+			resp.Diagnostics.AddWarning("Failed to stop Deno", err.Error())
 		}
 	}()
 
-	// Call /invoke endpoint with the props
-	httpResp, err := client.C().R().
-		SetContext(ctx).
-		SetBody(map[string]any{"props": fromDynamic(data.Props)}).
-		Post("/invoke")
-
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to invoke action",
-			fmt.Sprintf("Could not call /invoke endpoint: %s", err.Error()),
-		)
+	// Call the invoke JSON-RPC method
+	if err := c.Invoke(ctx, &deno.InvokeRequest{Props: dynamic.FromDynamic(data.Props)}); err != nil {
+		resp.Diagnostics.AddError("Failed to invoke action", err.Error())
 		return
 	}
-
-	if httpResp.StatusCode != 200 {
-		resp.Diagnostics.AddError(
-			"Action invocation failed",
-			fmt.Sprintf("Server returned status %d: %s", httpResp.StatusCode, httpResp.String()),
-		)
-		return
-	}
-
-	// Stream the JSONL response and send progress events
-	if err := streamJSONLProgress(httpResp.Body, resp); err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to process streaming response",
-			fmt.Sprintf("Error reading streaming response: %s", err.Error()),
-		)
-		return
-	}
-}
-
-// streamJSONLProgress reads a streaming JSONL response and sends progress events.
-func streamJSONLProgress(body io.Reader, resp *action.InvokeResponse) error {
-	scanner := bufio.NewScanner(body)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
-			continue
-		}
-
-		// Parse the JSON line
-		var progressData struct {
-			Message string `json:"message"`
-		}
-
-		if err := json.Unmarshal([]byte(line), &progressData); err != nil {
-			return fmt.Errorf("failed to parse JSONL line: %w", err)
-		}
-
-		// Send the progress event
-		resp.SendProgress(action.InvokeProgressEvent{
-			Message: progressData.Message,
-		})
-	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error reading response stream: %w", err)
-	}
-
-	return nil
 }

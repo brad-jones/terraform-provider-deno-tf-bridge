@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/brad-jones/terraform-provider-denobridge/internal/deno"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
@@ -86,7 +87,7 @@ func (p *DenoBridgeProvider) Configure(ctx context.Context, req provider.Configu
 		denoBinaryPath = config.DenoBinaryPath.ValueString()
 	} else {
 		// Auto-download Deno
-		downloader := NewDenoDownloader()
+		downloader := deno.NewDenoDownloader()
 
 		version := "latest"
 		if !config.DenoVersion.IsNull() {
