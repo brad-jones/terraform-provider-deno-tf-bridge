@@ -231,6 +231,14 @@ export class JSocket<ClientMethods extends JSONRPCMethods, ServerMethods extends
    */
   readonly #clientResponseWaiters = new Map<number, { resolve: (response: string) => void; timeout: number }>();
 
+  /**
+   * Queue of pending write operations to serialize access to the writer.
+   * This prevents concurrent getWriter() calls which would throw on some platforms.
+   *
+   * @internal
+   */
+  #writeQueue = Promise.resolve();
+
   #running = false;
 
   /**
@@ -363,16 +371,20 @@ export class JSocket<ClientMethods extends JSONRPCMethods, ServerMethods extends
    * ```
    */
   async Tx(line: string): Promise<void> {
-    let r;
-    const w = this.#writer.getWriter();
-    await w.ready;
-    try {
-      r = await w.write(new TextEncoder().encode(`${line}\n`));
-      this.#log(`Tx: ${line}`);
-    } finally {
-      w.releaseLock();
-    }
-    return r;
+    // Serialize all write operations to prevent concurrent getWriter() calls
+    // which can throw "Cannot acquire writer - stream is locked" on some platforms
+    this.#writeQueue = this.#writeQueue.then(async () => {
+      const w = this.#writer.getWriter();
+      await w.ready;
+      try {
+        await w.write(new TextEncoder().encode(`${line}\n`));
+        this.#log(`Tx: ${line}`);
+      } finally {
+        w.releaseLock();
+      }
+    });
+
+    await this.#writeQueue;
   }
 
   /**
