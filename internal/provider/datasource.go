@@ -44,7 +44,7 @@ func (d *denoBridgeDataSource) Metadata(_ context.Context, req datasource.Metada
 // Schema defines the schema for the data source.
 func (d *denoBridgeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Bridges the terraform-plugin-framework Datasource to a Deno HTTP Server.",
+		Description: "Bridges the terraform-plugin-framework Datasource to a Deno script.",
 		Attributes: map[string]schema.Attribute{
 			"path": schema.StringAttribute{
 				Description: "Path to the Deno script to execute.",

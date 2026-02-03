@@ -41,7 +41,7 @@ func (a *denoBridgeAction) Metadata(ctx context.Context, req action.MetadataRequ
 
 func (a *denoBridgeAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Bridges the terraform-plugin-framework Action to a Deno HTTP Server.",
+		Description: "Bridges the terraform-plugin-framework Action to a Deno script.",
 		Attributes: map[string]schema.Attribute{
 			"path": schema.StringAttribute{
 				Description: "Path to the Deno script to execute.",

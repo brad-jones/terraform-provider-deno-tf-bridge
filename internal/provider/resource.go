@@ -51,7 +51,7 @@ func (r *denoBridgeResource) Metadata(_ context.Context, req resource.MetadataRe
 // Schema defines the schema for the resource.
 func (r *denoBridgeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Bridges the terraform-plugin-framework Resource to a Deno HTTP Server.",
+		Description: "Bridges the terraform-plugin-framework Resource to a Deno script.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Unique identifier for the resource.",

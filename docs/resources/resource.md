@@ -3,19 +3,21 @@
 page_title: "denobridge_resource Resource - terraform-provider-denobridge"
 subcategory: ""
 description: |-
-  Bridges the terraform-plugin-framework Resource to a Deno HTTP Server.
+  Bridges the terraform-plugin-framework Resource to a Deno script.
 ---
 
 # denobridge_resource (Resource)
 
-Bridges the terraform-plugin-framework Resource to a Deno HTTP Server.
+Bridges the terraform-plugin-framework Resource to a Deno script.
+
+_Reference: <https://developer.hashicorp.com/terraform/plugin/framework/resources>_
 
 ## Example Usage
 
 ```terraform
 resource "denobridge_resource" "quote_of_the_day" {
   # The path to the underlying deno script.
-  # Remote HTTP URLs also supported! Any valid value that `deno serve` will accept.
+  # Remote HTTP URLs also supported! Any valid value that `deno run` will accept.
   path = "${path.module}/resource.ts"
 
   # The inputs required by the underlying deno script to read the data.
@@ -118,607 +120,125 @@ The [`+ "`" + `terraform import` + "`" +` command](https://developer.hashicorp.c
 terraform import denobridge_resource.quote_of_the_day '{"id":"quote.txt","path":"./resource.ts","permissions":{"all":true}}'
 ```
 
-## OpenAPI Specification
+## TypeScript Implementation
 
-HTTP API contract for Terraform `denobridge_resource` implementations.
-
-This specification defines the endpoints that a Deno TypeScript script must implement
-to provide full CRUD lifecycle support for a Terraform managed resource.
-
-The provider will start your Deno script as an HTTP server and make requests to
-these endpoints to manage the resource lifecycle.
-
-```yaml
-openapi: 3.1.0
-info:
-  title: DenoBridge Resource API
-  version: 1.0.0
-
-servers:
-  - url: http://localhost:{port}
-    description: Local Deno HTTP server (port assigned dynamically)
-    variables:
-      port:
-        default: "0"
-        description: Port dynamically assigned by the provider
-
-paths:
-  /health:
-    get:
-      summary: Health check endpoint
-      description: |
-        The provider polls this endpoint until it receives a successful response
-        before attempting to call any other lifecycle endpoints.
-      responses:
-        "204":
-          description: |
-            Server is ready to accept requests.
-            NB: 200 is also accepted for flexibility.
-
-  /create:
-    post:
-      summary: Create a new resource instance
-      description: |
-        Creates a new instance of the resource using the provided props.
-        Must return a unique ID that identifies this resource instance.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - props
-              properties:
-                props:
-                  type: object
-                  description: Input properties containing all required information to create the resource
-                  additionalProperties: true
-            example:
-              props:
-                path: "/tmp/example.txt"
-                content: "Hello, World!"
-      responses:
-        "200":
-          description: Resource created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - id
-                properties:
-                  id:
-                    type: string
-                    description: Unique identifier for the created resource
-                  state:
-                    type: object
-                    description: Additional computed state values only known after creation
-                    additionalProperties: true
-              example:
-                id: "/tmp/example.txt"
-                state:
-                  mtime: 1705324800000
-        "4XX":
-          description: Client error during resource creation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "5XX":
-          description: Server error during resource creation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /read:
-    post:
-      summary: Read the current state of an existing resource
-      description: |
-        Refreshes the current state of a resource. Should return updated props
-        and state that may have changed since creation or last update.
-
-        If the resource no longer exists, return `{"exists": false}` to signal
-        Terraform to remove it from state (triggering re-creation on next plan).
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - id
-              properties:
-                id:
-                  type: string
-                  description: Unique identifier of the resource to read
-                props:
-                  type: object
-                  description: |
-                    Current properties of the resource from Terraform state.
-                    As much as possible you should only rely on the id to be able
-                    to lookup the current props & state.
-
-                    But in some cases you may need more than the id to uniquely identify a resource,
-                    in which case you can use the previously saved props but keep in mind these may
-                    not always be available.
-
-                    You should highlight these additional props that are required for identification in your resource docs.
-                    This is especially important when importing existing resources.
-                  additionalProperties: true
-                  nullable: true
-            example:
-              id: "/tmp/example.txt"
-      responses:
-        "200":
-          description: Resource state retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  props:
-                    type: object
-                    description: Refreshed properties of the resource
-                    additionalProperties: true
-                  state:
-                    type: object
-                    description: Refreshed computed state values
-                    additionalProperties: true
-                  exists:
-                    type: boolean
-                    description: Set to false if the resource no longer exists
-              example:
-                props:
-                  path: "/tmp/example.txt"
-                  content: "Hello, World!"
-                state:
-                  mtime: 1705324800000
-        "4XX":
-          description: Client error during resource read
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "5XX":
-          description: Server error during resource read
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /update:
-    post:
-      summary: Update an existing resource
-      description: |
-        Updates a resource in place with new property values.
-
-        If the update cannot be performed in place (e.g., would change the ID),
-        return a 422 error. Better yet, implement /modify-plan to signal
-        Terraform to perform a replacement (create then delete) instead.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - id
-                - currentProps
-                - currentState
-                - nextProps
-              properties:
-                id:
-                  type: string
-                  description: Unique identifier of the resource to update
-                currentProps:
-                  type: object
-                  description: Current properties from Terraform state (post-refresh)
-                  additionalProperties: true
-                currentState:
-                  type: object
-                  description: Current computed state from Terraform state (post-refresh)
-                  additionalProperties: true
-                nextProps:
-                  type: object
-                  description: Desired properties to update to
-                  additionalProperties: true
-            example:
-              id: "/tmp/example.txt"
-              currentProps:
-                path: "/tmp/example.txt"
-                content: "Hello, World!"
-              currentState:
-                mtime: 1705324800000
-              nextProps:
-                path: "/tmp/example.txt"
-                content: "Updated content"
-      responses:
-        "200":
-          description: Resource updated successfully with new state
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  state:
-                    type: object
-                    description: Updated computed state values
-                    additionalProperties: true
-              example:
-                state:
-                  mtime: 1705325000000
-        "204":
-          description: Resource updated successfully with no state changes
-        "422":
-          description: Update cannot be performed in place, requires replacement
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                error: "Cannot change file path - requires resource replacement"
-        "4XX":
-          description: Client error during resource update
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "5XX":
-          description: Server error during resource update
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /delete:
-    post:
-      summary: Delete an existing resource
-      description: Deletes the resource and cleans up any associated infrastructure
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - id
-                - props
-                - state
-              properties:
-                id:
-                  type: string
-                  description: Unique identifier of the resource to delete
-                props:
-                  type: object
-                  description: Current properties from Terraform state
-                  additionalProperties: true
-                state:
-                  type: object
-                  description: Current computed state from Terraform state
-                  additionalProperties: true
-            example:
-              id: "/tmp/example.txt"
-              props:
-                path: "/tmp/example.txt"
-                content: "Hello, World!"
-              state:
-                mtime: 1705324800000
-      responses:
-        "204":
-          description: Resource deleted successfully
-        "4XX":
-          description: Client error during resource deletion
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "5XX":
-          description: Server error during resource deletion
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /modify-plan:
-    post:
-      summary: Modify the Terraform plan (optional)
-      description: |
-        Optional endpoint that allows custom plan modifications.
-
-        Common use cases:
-        - Signal that a resource requires replacement instead of in-place update
-        - Provide default values for unset properties
-        - Add validation warnings or errors
-        - Add diagnostics for resource destroy operations
-
-        If this endpoint is not implemented (returns 404), the provider continues
-        without modifications. Return 204 to indicate no changes are needed.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - id
-                - planType
-              properties:
-                id:
-                  type: string
-                  description: Resource ID (empty string for create operations)
-                planType:
-                  type: string
-                  enum: [create, update, delete]
-                  description: Type of operation being planned
-                nextProps:
-                  type: object
-                  description: Desired properties (provided for create and update)
-                  additionalProperties: true
-                currentProps:
-                  type: object
-                  description: Current properties (provided for update and delete)
-                  additionalProperties: true
-                currentState:
-                  type: object
-                  description: Current computed state (provided for update and delete)
-                  additionalProperties: true
-            examples:
-              create:
-                summary: Create plan
-                value:
-                  id: ""
-                  planType: "create"
-                  nextProps:
-                    path: "/tmp/new.txt"
-                    content: "New file"
-              update:
-                summary: Update plan
-                value:
-                  id: "/tmp/example.txt"
-                  planType: "update"
-                  currentProps:
-                    path: "/tmp/example.txt"
-                    content: "Old content"
-                  currentState:
-                    mtime: 1705324800000
-                  nextProps:
-                    path: "/tmp/renamed.txt"
-                    content: "New content"
-              delete:
-                summary: Delete plan
-                value:
-                  id: "/tmp/example.txt"
-                  planType: "delete"
-                  currentProps:
-                    path: "/tmp/example.txt"
-                    content: "Content"
-                  currentState:
-                    mtime: 1705324800000
-      responses:
-        "200":
-          description: Plan modifications returned
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  modifiedProps:
-                    type: object
-                    description: Modified property values to use in the plan
-                    additionalProperties: true
-                  requiresReplacement:
-                    type: boolean
-                    description: If true, Terraform will replace (create then delete) instead of update
-                  diagnostics:
-                    type: array
-                    description: Additional warnings or errors to display
-                    items:
-                      type: object
-                      required:
-                        - severity
-                        - summary
-                        - detail
-                      properties:
-                        severity:
-                          type: string
-                          enum: [error, warning]
-                        summary:
-                          type: string
-                          description: Short diagnostic message
-                        detail:
-                          type: string
-                          description: Detailed diagnostic message
-                        propName:
-                          type: string
-                          description: Specific property name this diagnostic relates to
-              examples:
-                requiresReplacement:
-                  summary: Signal replacement needed
-                  value:
-                    requiresReplacement: true
-                modifiedProps:
-                  summary: Provide default values
-                  value:
-                    modifiedProps:
-                      content: "Default content"
-                diagnostic:
-                  summary: Add warning for destroy
-                  value:
-                    diagnostics:
-                      - severity: "warning"
-                        summary: "Resource Destruction Considerations"
-                        detail: "Applying this resource destruction will only remove the resource from the Terraform state."
-        "204":
-          description: No plan modifications needed
-        "404":
-          description: Endpoint not implemented (provider will continue without modifications)
-
-components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error message describing what went wrong
-```
-
-## Example Server
-
-This shows how one might fulfil the above OpenAPI specification.
-
-The script **MUST** export a `default` export that satisfies `Deno.ServeDefaultExport`.
-So that it can be executed with [`deno serve`](https://docs.deno.com/runtime/reference/cli/serve/).
-
-_NB: Using Hono is not a requirement, your welcome to use your favorite HTTP server library._
+Simply create a new instance of the `ResourceProvider`.
 
 ```ts
-import { Hono } from "hono";
+import { ResourceProvider } from "@brad-jones/terraform-provider-denobridge";
 
-const app = new Hono();
+interface Props {
+  path: string;
+  content: string;
+}
 
-app.get("/health", (c) => {
-  // The provider will poll this endpoint until it gets a good response before
-  // attempting to call any of the other lifecycle endpoints
-  return c.body(null, 204);
-});
+interface State {
+  mtime: number;
+}
 
-app.post("/create", async (c) => {
-  // Create is given a set of props that should contain all required
-  // information to create a new instance of the resource.
-  const body = await c.req.json();
-  const { path, content } = body.props;
+new ResourceProvider<Props, State>({
+  async create({ path, content }) {
+    await Deno.writeTextFile(path, content);
 
-  // In this case we are just creating a file
-  await Deno.writeTextFile(path, content);
+    return {
+      // At minimum, the create endpoint must return an id that uniquely identifies this resource.
+      id: path,
 
-  return c.json({
-    // At minimum, the create endpoint must return an id that uniquely identifies this resource.
-    id: path,
-
-    // Optional additional state that is only known after the resource is created can be returned in the state object.
-    state: {
-      mtime: (await Deno.stat(path)).mtime!.getTime(),
-    },
-  });
-});
-
-app.post("/read", async (c) => {
-  // Read is given the id of a previously created resource along with it's props.
-  // In this case the id is the same as the file path so we don't really need the
-  // props to update the current state.
-  const body = await c.req.json();
-  const { id } = body;
-  // const { path } = body.props; id === path
-
-  // The read methods job is to get the current state of an existing resource.
-  // And return an updated set of props & optional additional state that may
-  // have changed (by outside actors), since the resource was initially created
-  // (or last updated).
-  try {
-    const content = await Deno.readTextFile(id);
-    return c.json({
-      props: { path: id, content },
+      // Optional additional state that is only known after the resource is created can be returned in the state object.
       state: {
-        mtime: (await Deno.stat(id)).mtime!.getTime(),
+        mtime: (await Deno.stat(path)).mtime!.getTime(),
       },
-    });
-  } catch (e) {
-    if (e instanceof Deno.errors.NotFound) {
-      // In the event we can no longer locate the resource we should signal
-      // to tf to remove the resource from state. This will cause tf to re-create
-      // the resource on the next plan.
-      return c.json({ exists: false });
+    };
+  },
+  async read(id, props) {
+    // The read methods job is to get the current state of an existing resource.
+    // And return an updated set of props & optional additional state that may
+    // have changed (by outside actors), since the resource was initially created
+    // (or last updated).
+    try {
+      const content = await Deno.readTextFile(id);
+      return {
+        props: { path: id, content },
+        state: {
+          mtime: (await Deno.stat(id)).mtime!.getTime(),
+        },
+      };
+    } catch (e) {
+      if (e instanceof Deno.errors.NotFound) {
+        // In the event we can no longer locate the resource we should signal
+        // to tf to remove the resource from state. This will cause tf to re-create
+        // the resource on the next plan.
+        return { exists: false };
+      }
+      throw e;
     }
-    throw e;
-  }
+  },
+  async update(id, nextProps, currentProps, currentState) {
+    // In this case an in place update is not supported for a file when the path
+    // changes because that would mean the ID would change too & tf can't deal with that easily.
+    // So we return an error here but if an update wouldn't result in a new ID, there is no need to return such an error.
+    // Or implement the /modify-plan endpoint, which should have caught this & told tf to do a replacement instead (ie: create then delete).
+    if (nextProps.path !== currentProps.path) {
+      throw new Error("Cannot change file path - requires resource replacement");
+    }
+
+    // Perform the update
+    await Deno.writeTextFile(id, nextProps.content);
+
+    // Return the updated state
+    return { mtime: (await Deno.stat(id)).mtime!.getTime() };
+  },
+  async delete(id, _props, _state) {
+    await Deno.remove(id);
+  },
+  async modifyPlan(_id, planType, nextProps, currentProps, currentState) {
+    // If you decide you don't want to make any changes to the plan, just return a 204 No Content response.
+    if (planType !== "update") {
+      return;
+    }
+
+    // The most common use case for this endpoint is to tell tf if the resource
+    // requires replacement (ie: create then delete) instead of an inline update.
+    return { requiresReplacement: currentProps?.path !== nextProps.path };
+
+    // Other use cases include returning a set of modifiedProps.
+    // For example to provide default values for any unset props.
+    // eg: return { modifiedProps: { content: nextProps?.content ?? "Hello World" } }
+
+    // Or returning diagnostics, eg: for Destroy plans. As well as any other validation.
+    // see: https://developer.hashicorp.com/terraform/plugin/framework/resources/plan-modification#resource-destroy-plan-diagnostics
+    // eg: return {
+    //   diagnostics: [{
+    //     severity: "warning",
+    //     summary: "Resource Destruction Considerations",
+    //     detail: `Applying this resource destruction will only remove the resource
+    //             from the Terraform state and will not call the deletion API due to API limitations.
+    //             Manually use the web interface to fully destroy this resource.`
+    //   }]
+    // }
+  },
 });
-
-app.post("/update", async (c) => {
-  // Update is given the id of a previously created resource along with the
-  // current props & state (this will either have come from the saved tf state
-  // or more likely be the refreshed data returned from the /read endpoint),
-  // as well as the next set of props to update the resource to.
-  const body = await c.req.json();
-  const { id } = body;
-  const { path: currentPath } = body.currentProps;
-  const { mtime: currentMTime } = body.currentState;
-  const { path: nextPath, content: nextContent } = body.nextProps;
-
-  // In this case an in place update is not supported for a file when the path
-  // changes because that would mean the ID would change too & tf can't deal with that easily.
-  // So we return an error here but if an update wouldn't result in a new ID, there is no need to return such an error.
-  // Or implement the /modify-plan endpoint, which should have caught this & told tf to do a replacement instead (ie: create then delete).
-  if (nextPath !== currentPath) {
-    return c.json({ error: "Cannot change file path - requires resource replacement" }, 422);
-  }
-
-  // Perform the update
-  await Deno.writeTextFile(currentPath, nextContent);
-
-  // Return the updated state
-  return c.json({ state: { mtime: (await Deno.stat(currentPath)).mtime!.getTime() } });
-
-  // NB: If the update doesn't result in any state change (ie: there is simply no additional computed props to return)
-  // Then you can return a 204 Not Content response to signal the update was successfully applied.
-  // eg: return c.body(null, 204);
-});
-
-app.post("/delete", async (c) => {
-  // Delete is given the id of a previously created resource along with it's props & any additional computed state.
-  const body = await c.req.json();
-  const { id } = body;
-  const { path } = body.props;
-  const { mtime } = body.state;
-
-  // Perform the delete
-  await Deno.remove(path);
-
-  // And signal success a 204 Not Content response.
-  return c.body(null, 204);
-});
-
-// This endpoint is optional, if your server returns a 404, the provider will just carry on without making any plan modifications.
-app.post("/modify-plan", async (c) => {
-  // The ModifyPlan method is given:
-  //  - The id of the resource (which could be empty if the resource is yet to be created)
-  //  - The type of plan that we are modifying (create, update or delete)
-  //  - nextProps will be set for create & update
-  //  - currentProps will be set for update & delete
-  //  - currentState will be set for update & delete
-  const body = await c.req.json();
-  const { planType } = body;
-
-  // If you decide you don't want to make any changes to the plan, just return a 204 No Content response.
-  if (planType !== "update") {
-    return c.body(null, 204);
-  }
-
-  // The most common use case for this endpoint is to tell tf if the resource
-  // requires replacement (ie: create then delete) instead of an inline update.
-  const { currentProps, nextProps } = body;
-  return c.json({ requiresReplacement: currentProps.path !== nextProps.path });
-
-  // Other use cases include returning a set of modifiedProps.
-  // For example to provide default values for any unset props.
-  // eg: return c.json({ modifiedProps: { content: nextProps?.content ?? "Hello World" } })
-
-  // Or returning diagnostics, eg: for Destroy plans. As well as any other validation.
-  // see: https://developer.hashicorp.com/terraform/plugin/framework/resources/plan-modification#resource-destroy-plan-diagnostics
-  // eg: return c.json({
-  //   diagnostics: [{
-  //     severity: "warning",
-  //     summary: "Resource Destruction Considerations",
-  //     detail: `Applying this resource destruction will only remove the resource
-  //             from the Terraform state and will not call the deletion API due to API limitations.
-  //             Manually use the web interface to fully destroy this resource.`
-  //   }]
-  // })
-});
-
-export default app satisfies Deno.ServeDefaultExport;
 ```
 
-_read more: <https://developer.hashicorp.com/terraform/plugin/framework/resources>_
+### Zod Validation
+
+Alternatively you can use the `ZodResourceProvider`, this will ensure all
+input & outputs to & from your TypeScript provider are validated at runtime.
+
+```ts
+import { z } from "jsr:@zod/zod";
+import { ZodResourceProvider } from "@brad-jones/terraform-provider-denobridge";
+
+const Props = z.object({
+  path: z.string(),
+  content: z.string(),
+});
+
+const State = z.object({
+  mtime: z.number(),
+});
+
+new ZodResourceProvider(Props, State, {
+  // as above but validated...
+});
+```

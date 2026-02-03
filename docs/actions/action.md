@@ -3,19 +3,21 @@
 page_title: "denobridge_action Action - terraform-provider-denobridge"
 subcategory: ""
 description: |-
-  Bridges the terraform-plugin-framework Action to a Deno HTTP Server.
+  Bridges the terraform-plugin-framework Action to a Deno script.
 ---
 
 # denobridge_action (Action)
 
-Bridges the terraform-plugin-framework Action to a Deno HTTP Server.
+Bridges the terraform-plugin-framework Action to a Deno script.
+
+_Reference: <https://developer.hashicorp.com/terraform/plugin/framework/actions>_
 
 ## Example Usage
 
 ```terraform
 action "denobridge_action" "launch_rocket" {
   # The path to the underlying deno script.
-  # Remote HTTP URLs also supported! Any valid value that `deno serve` will accept.
+  # Remote HTTP URLs also supported! Any valid value that `deno run` will accept.
   path = "${path.module}/action.ts"
 
   # The inputs required by the underlying deno script to invoke the action.
@@ -68,155 +70,42 @@ Optional:
 - `allow` (List of String) List of permissions to allow (e.g., 'read', 'write', 'net').
 - `deny` (List of String) List of permissions to deny.
 
-## OpenAPI Specification
+## TypeScript Implementation
 
-HTTP API contract for Terraform denobridge_action implementations.
-
-This specification defines the endpoints that a Deno TypeScript script must implement
-to provide action functionality in Terraform.
-
-Actions are operations that can be invoked during Terraform execution but don't
-manage resources or data. They're useful for tasks like notifications, validations,
-or triggering external workflows. The provider will start your Deno script as an
-HTTP server and call the /invoke endpoint with streaming JSONL response support.
-
-```yaml
-openapi: 3.1.0
-info:
-  title: DenoBridge Action API
-  version: 1.0.0
-
-servers:
-  - url: http://localhost:{port}
-    description: Local Deno HTTP server (port assigned dynamically)
-    variables:
-      port:
-        default: "0"
-        description: Port dynamically assigned by the provider
-
-paths:
-  /health:
-    get:
-      summary: Health check endpoint
-      description: |
-        The provider polls this endpoint until it receives a successful response
-        before attempting to call any other endpoints.
-      responses:
-        "204":
-          description: |
-            Server is ready to accept requests.
-            NB: 200 is also accepted for flexibility.
-
-  /invoke:
-    post:
-      summary: Invoke the action
-      description: |
-        Executes the action with the provided input properties.
-
-        The response should be a streaming JSONL (JSON Lines) format, where each line
-        is a JSON object containing a "message" field. These messages are sent as
-        progress events to Terraform and displayed to the user in real-time.
-
-        This allows for long-running operations to provide feedback during execution.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - props
-              properties:
-                props:
-                  type: object
-                  description: Input properties for the action
-                  additionalProperties: true
-            example:
-              props:
-                path: "/tmp/action-file.txt"
-                content: "Action content"
-      responses:
-        "200":
-          description: Action invoked successfully with streaming progress
-          content:
-            application/jsonl:
-              schema:
-                type: string
-                description: |
-                  Newline-delimited JSON stream where each line is a JSON object
-                  with a "message" field containing progress information
-                format: jsonl
-              example: |
-                {"message":"about to write file"}
-                {"message":"file written"}
-        "4XX":
-          description: Client error during action invocation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "5XX":
-          description: Server error during action invocation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Error message describing what went wrong
-
-    ProgressMessage:
-      type: object
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          description: Progress message to display to the user
-      example:
-        message: "Processing step 1 of 3"
-```
-
-## Example Server
-
-This shows how one might fulfil the above OpenAPI specification.
-
-The script **MUST** export a `default` export that satisfies `Deno.ServeDefaultExport`.
-So that it can be executed with [`deno serve`](https://docs.deno.com/runtime/reference/cli/serve/).
-
-_NB: Using Hono is not a requirement, your welcome to use your favorite HTTP server library._
+Simply create a new instance of the `ActionProvider`.
 
 ```ts
-import { Hono } from "jsr:@hono/hono";
-import { streamText } from "jsr:@hono/hono/streaming";
+import { ActionProvider } from "jsr:@brad-jones/terraform-provider-denobridge";
 
-const app = new Hono();
+interface Props {
+  destination: string;
+}
 
-app.get("/health", (c) => {
-  return c.body(null, 204);
+new ActionProvider<Props>({
+  async invoke({ destination }, progressCallback) {
+    await progressCallback(`launching rocket to ${destination}`);
+    await progressCallback(`3...`);
+    await progressCallback(`2...`);
+    await progressCallback(`1...`);
+    await progressCallback(`blast off`);
+  },
 });
-
-app.post("/invoke", async (c) => {
-  const body = await c.req.json();
-  const { destination } = body.props;
-  c.header("Content-Type", "application/jsonl");
-
-  return streamText(c, async (stream) => {
-    await stream.writeln(JSON.stringify({ message: `launching rocket to ${destination}` }));
-    await stream.writeln(JSON.stringify({ message: "3..." }));
-    await stream.writeln(JSON.stringify({ message: "2..." }));
-    await stream.writeln(JSON.stringify({ message: "1..." }));
-    await stream.writeln(JSON.stringify({ message: "blast off" }));
-  });
-});
-
-export default app satisfies Deno.ServeDefaultExport;
 ```
 
-_read more: <https://developer.hashicorp.com/terraform/plugin/framework/actions>_
+### Zod Validation
+
+Alternatively you can use the `ZodActionProvider`, this will ensure all
+input & outputs to & from your TypeScript provider are validated at runtime.
+
+```ts
+import { z } from "jsr:@zod/zod";
+import { ZodActionProvider } from "jsr:@brad-jones/terraform-provider-denobridge";
+
+const Props = z.object({
+  destination: z.string(),
+});
+
+new ZodActionProvider(Props, {
+  // as above but validated...
+});
+```

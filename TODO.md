@@ -1,4 +1,0 @@
-- Refactor docs
-- deno publishing linting
-- deno publish into CI/CD pipeline
-- maybe write more tests

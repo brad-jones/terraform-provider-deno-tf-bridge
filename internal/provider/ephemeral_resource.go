@@ -46,7 +46,7 @@ func (r *denoBridgeEphemeralResource) Metadata(_ context.Context, req ephemeral.
 
 func (r *denoBridgeEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaRequest, resp *ephemeral.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Bridges the terraform-plugin-framework Ephemeral Resource to a Deno HTTP Server.",
+		Description: "Bridges the terraform-plugin-framework Ephemeral Resource to a Deno script.",
 		Attributes: map[string]schema.Attribute{
 			"path": schema.StringAttribute{
 				Description: "Path to the Deno script to execute.",
