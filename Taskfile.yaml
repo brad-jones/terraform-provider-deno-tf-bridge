@@ -17,6 +17,7 @@ tasks:
       - git config pull.rebase true
       - git config core.editor "code --wait"
       - git config commit.template "$PWD/.gitmsgtpl"
+      - deno install {{if .CI}}--frozen{{end}}
       - "{{if .CI}}git config --global user.name github-actions[bot]{{end}}"
       - "{{if .CI}}git config --global user.email github-actions[bot]@users.noreply.github.com{{end}}"
 
@@ -134,11 +135,34 @@ tasks:
           remove("./example/bjc.mx");
           ' | deno run -qA -
 
+  cog:
+    desc: Executes 'cog bump' which orchestrates the release process.
+    deps:
+      - init
+    preconditions:
+      - '[ "$CI" = "true" ]'
+    cmds:
+      - deno run -qA ./scripts/try-cog-bump.ts
+
+  package:
+    desc: This is triggered by cog as a pre_bump_hook to generate all the final publishable artifacts
+    requires:
+      vars:
+        - VERSION
+    cmds:
+      - >-
+          echo '
+            const config = JSON.parse(Deno.readTextFileSync("deno.json"));
+            config.version = "{{.VERSION}}";
+            Deno.writeTextFileSync("deno.json", JSON.stringify(config, null, 2));
+          ' | deno run -A -
+
   publish:
     desc: This is triggered by cog as a post_bump_hook to publish all the final publishable artifacts
     requires:
       vars:
         - VERSION
     cmds:
+      - deno publish
       - git push && git push --tags
       - goreleaser release --release-notes <(deno run -qA ./scripts/cog-extract-changelog.ts < CHANGELOG.md)

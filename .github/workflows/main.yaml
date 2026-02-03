@@ -17,14 +17,13 @@ jobs:
       - name: ⚙️ Install pixi env
         uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          pixi-version: v0.62.2
+          pixi-version: v0.63.2
           activate-environment: true
 
       - name: ✔️ Lint
         run: task lint
 
   test:
-    needs: [lint]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -41,7 +40,7 @@ jobs:
       - name: ⚙️ Install pixi env
         uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          pixi-version: v0.62.2
+          pixi-version: v0.63.2
           activate-environment: true
 
       - name: Additional Environment Initialization
@@ -56,7 +55,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
-    needs: [test]
+    needs: [lint, test]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -72,11 +71,8 @@ jobs:
       - name: ⚙️ Install pixi env
         uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          pixi-version: v0.62.2
+          pixi-version: v0.63.2
           activate-environment: true
-
-      - name: Additional Environment Initialization
-        run: task init
 
       - name: 🔑 Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6.3.0
@@ -85,8 +81,8 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
 
-      - name: 🚀 Publish
-        run: cog bump --auto
+      - name: 🚀 Publish Release
+        run: task cog
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

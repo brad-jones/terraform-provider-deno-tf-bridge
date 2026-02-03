@@ -115,7 +115,9 @@ export function createJSocket<ClientMethods extends JSONRPCMethods>(
   reader: CloseableReadable,
   writer: Writeable,
   options?: JSocketOptions,
-) {
+): <ServerMethods extends JSONRPCMethods>(
+  serverMethods: (client: JSONRPCClient<ClientMethods>) => ServerMethods,
+) => JSocket<ClientMethods, ServerMethods> {
   return <ServerMethods extends JSONRPCMethods>(
     serverMethods: (client: JSONRPCClient<ClientMethods>) => ServerMethods,
   ): JSocket<ClientMethods, ServerMethods> => {
@@ -339,7 +341,7 @@ export class JSocket<ClientMethods extends JSONRPCMethods, ServerMethods extends
    * conn.Rx(line => {}, controller.signal);
    * ```
    */
-  Rx(listener: (line: string) => Promise<void> | void, signal?: AbortSignal) {
+  Rx(listener: (line: string) => Promise<void> | void, signal?: AbortSignal): () => void {
     this.#listeners.set(listener, true);
 
     const cancel = () => {
@@ -360,7 +362,7 @@ export class JSocket<ClientMethods extends JSONRPCMethods, ServerMethods extends
    * await conn.Tx(`{ "foo": "bar" }`);
    * ```
    */
-  async Tx(line: string) {
+  async Tx(line: string): Promise<void> {
     let r;
     const w = this.#writer.getWriter();
     await w.ready;
