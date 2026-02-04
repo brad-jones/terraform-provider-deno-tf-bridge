@@ -194,11 +194,21 @@ Creates a new resource instance.
     "id": "resource-unique-identifier",
     "state": {
       "// Computed state values": "..."
-    }
+    },
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "summary": "Property normalized",
+        "detail": "The value was normalized to a standard format",
+        "propPath": ["props", "example_property"]
+      }
+    ]
   },
   "id": 3
 }
 ```
+
+**Note**: The `diagnostics` field is optional and can be omitted if there are no warnings or errors to report.
 
 #### OpenRPC Schema
 
@@ -234,6 +244,36 @@ Creates a new resource instance.
         "state": {
           "type": "object",
           "description": "Computed state values for the resource"
+        },
+        "diagnostics": {
+          "type": "array",
+          "description": "Optional warnings or errors to display to the user",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning"],
+                "description": "Diagnostic severity level"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Short description of the diagnostic"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Additional context about the diagnostic"
+              },
+              "propPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path to the property this diagnostic relates to"
+              }
+            },
+            "required": ["severity", "summary", "detail"]
+          }
         }
       },
       "required": ["id", "state"]
@@ -275,11 +315,21 @@ Reads the current state of a resource instance. Can indicate resource no longer 
     },
     "state": {
       "// Refreshed computed state": "..."
-    }
+    },
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "summary": "Deprecated property",
+        "detail": "The property 'old_field' is deprecated and will be removed in a future version",
+        "propPath": ["props", "old_field"]
+      }
+    ]
   },
   "id": 4
 }
 ```
+
+**Note**: The `diagnostics` field is optional and can be omitted if there are no warnings or errors to report.
 
 #### Response (Resource Doesn't Exist)
 
@@ -333,6 +383,36 @@ Reads the current state of a resource instance. Can indicate resource no longer 
             "state": {
               "type": "object",
               "description": "Refreshed computed state"
+            },
+            "diagnostics": {
+              "type": "array",
+              "description": "Optional warnings or errors to display to the user",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning"],
+                    "description": "Diagnostic severity level"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Short description of the diagnostic"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Additional context about the diagnostic"
+                  },
+                  "propPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Path to the property this diagnostic relates to"
+                  }
+                },
+                "required": ["severity", "summary", "detail"]
+              }
             }
           },
           "required": ["props", "state"]
@@ -390,11 +470,20 @@ Updates an existing resource instance with new configuration.
   "result": {
     "state": {
       "// Updated computed state": "..."
-    }
+    },
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "summary": "Update may take time",
+        "detail": "This update operation may take several minutes to complete"
+      }
+    ]
   },
   "id": 5
 }
 ```
+
+**Note**: The `diagnostics` field is optional and can be omitted if there are no warnings or errors to report.
 
 #### OpenRPC Schema
 
@@ -438,6 +527,36 @@ Updates an existing resource instance with new configuration.
         "state": {
           "type": "object",
           "description": "Updated computed state after the update"
+        },
+        "diagnostics": {
+          "type": "array",
+          "description": "Optional warnings or errors to display to the user",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning"],
+                "description": "Diagnostic severity level"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Short description of the diagnostic"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Additional context about the diagnostic"
+              },
+              "propPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path to the property this diagnostic relates to"
+              }
+            },
+            "required": ["severity", "summary", "detail"]
+          }
         }
       },
       "required": ["state"]
@@ -477,11 +596,20 @@ Deletes a resource instance.
 {
   "jsonrpc": "2.0",
   "result": {
-    "done": true
+    "done": true,
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "summary": "Resource cleanup incomplete",
+        "detail": "Some associated resources may need to be manually cleaned up"
+      }
+    ]
   },
   "id": 6
 }
 ```
+
+**Note**: The `diagnostics` field is optional and can be omitted if there are no warnings or errors to report.
 
 #### OpenRPC Schema
 
@@ -521,6 +649,36 @@ Deletes a resource instance.
         "done": {
           "type": "boolean",
           "description": "Must be true to indicate successful deletion"
+        },
+        "diagnostics": {
+          "type": "array",
+          "description": "Optional warnings or errors to display to the user",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning"],
+                "description": "Diagnostic severity level"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Short description of the diagnostic"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Additional context about the diagnostic"
+              },
+              "propPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path to the property this diagnostic relates to"
+              }
+            },
+            "required": ["severity", "summary", "detail"]
+          }
         }
       },
       "required": ["done"]
@@ -586,7 +744,7 @@ Allows the resource to modify planned values before apply or indicate that a res
         "severity": "warning",
         "summary": "Property normalized",
         "detail": "The value was normalized to a standard format",
-        "propName": "example_property"
+        "propPath": ["nextProps", "example_property"]
       }
     ]
   },
@@ -681,8 +839,12 @@ Allows the resource to modify planned values before apply or indicate that a res
                   "detail": {
                     "type": "string"
                   },
-                  "propName": {
-                    "type": "string"
+                  "propPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Path to the property this diagnostic relates to"
                   }
                 },
                 "required": ["severity", "summary", "detail"]
@@ -745,11 +907,20 @@ Reads data from an external source based on the provided configuration.
   "result": {
     "result": {
       "// Retrieved data": "..."
-    }
+    },
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "summary": "Data may be stale",
+        "detail": "The retrieved data is from a cache and may be slightly out of date"
+      }
+    ]
   },
   "id": 8
 }
 ```
+
+**Note**: The `diagnostics` field is optional and can be omitted if there are no warnings or errors to report.
 
 #### OpenRPC Schema
 
@@ -781,6 +952,36 @@ Reads data from an external source based on the provided configuration.
         "result": {
           "type": "object",
           "description": "Retrieved data from the external source"
+        },
+        "diagnostics": {
+          "type": "array",
+          "description": "Optional warnings or errors to display to the user",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning"],
+                "description": "Diagnostic severity level"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Short description of the diagnostic"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Additional context about the diagnostic"
+              },
+              "propPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path to the property this diagnostic relates to"
+              }
+            },
+            "required": ["severity", "summary", "detail"]
+          }
         }
       },
       "required": ["result"]
@@ -826,7 +1027,14 @@ Opens an ephemeral resource, optionally with automatic renewal.
     "renewAt": 1735891200000,
     "privateData": {
       "// Internal data for renewal/close": "..."
-    }
+    },
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "summary": "Credential expiry",
+        "detail": "The ephemeral credential will expire in 1 hour"
+      }
+    ]
   },
   "id": 9
 }
@@ -837,6 +1045,7 @@ Opens an ephemeral resource, optionally with automatic renewal.
 - `result` (required): The ephemeral data to be made available
 - `renewAt` (optional): Unix timestamp in seconds when renewal should occur
 - `privateData` (optional): Private data passed back to renew/close methods (not exposed to Terraform)
+- `diagnostics` (optional): Warnings or errors to display to the user
 
 #### OpenRPC Schema
 
@@ -876,6 +1085,36 @@ Opens an ephemeral resource, optionally with automatic renewal.
         "privateData": {
           "type": "object",
           "description": "Private data for internal use (passed to renew/close)"
+        },
+        "diagnostics": {
+          "type": "array",
+          "description": "Optional warnings or errors to display to the user",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning"],
+                "description": "Diagnostic severity level"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Short description of the diagnostic"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Additional context about the diagnostic"
+              },
+              "propPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path to the property this diagnostic relates to"
+              }
+            },
+            "required": ["severity", "summary", "detail"]
+          }
         }
       },
       "required": ["result"]
@@ -914,11 +1153,20 @@ Renews an ephemeral resource before it expires. This method is optional.
     "renewAt": 1735894800000,
     "privateData": {
       "// Updated private data": "..."
-    }
+    },
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "summary": "Renewal rate limit",
+        "detail": "Approaching rate limit for renewal operations"
+      }
+    ]
   },
   "id": 10
 }
 ```
+
+**Note**: The `diagnostics` field is optional and can be omitted if there are no warnings or errors to report.
 
 #### OpenRPC Schema
 
@@ -954,6 +1202,36 @@ Renews an ephemeral resource before it expires. This method is optional.
         "privateData": {
           "type": "object",
           "description": "Updated private data for next renewal or close"
+        },
+        "diagnostics": {
+          "type": "array",
+          "description": "Optional warnings or errors to display to the user",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning"],
+                "description": "Diagnostic severity level"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Short description of the diagnostic"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Additional context about the diagnostic"
+              },
+              "propPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path to the property this diagnostic relates to"
+              }
+            },
+            "required": ["severity", "summary", "detail"]
+          }
         }
       }
     }
@@ -995,11 +1273,20 @@ Closes an ephemeral resource and performs cleanup. This method is optional.
 {
   "jsonrpc": "2.0",
   "result": {
-    "done": true
+    "done": true,
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "summary": "Cleanup incomplete",
+        "detail": "Some temporary resources could not be cleaned up automatically"
+      }
+    ]
   },
   "id": 11
 }
 ```
+
+**Note**: The `diagnostics` field is optional and can be omitted if there are no warnings or errors to report.
 
 #### OpenRPC Schema
 
@@ -1031,6 +1318,36 @@ Closes an ephemeral resource and performs cleanup. This method is optional.
         "done": {
           "type": "boolean",
           "description": "Must be true to indicate successful closure"
+        },
+        "diagnostics": {
+          "type": "array",
+          "description": "Optional warnings or errors to display to the user",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning"],
+                "description": "Diagnostic severity level"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Short description of the diagnostic"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Additional context about the diagnostic"
+              },
+              "propPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path to the property this diagnostic relates to"
+              }
+            },
+            "required": ["severity", "summary", "detail"]
+          }
         }
       },
       "required": ["done"]
@@ -1077,11 +1394,20 @@ Invokes an action operation.
 {
   "jsonrpc": "2.0",
   "result": {
-    "done": true
+    "done": true,
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "summary": "Action partially completed",
+        "detail": "Some operations completed with warnings"
+      }
+    ]
   },
   "id": 12
 }
 ```
+
+**Note**: The `diagnostics` field is optional and can be omitted if there are no warnings or errors to report.
 
 #### OpenRPC Schema
 
@@ -1113,6 +1439,36 @@ Invokes an action operation.
         "done": {
           "type": "boolean",
           "description": "Must be true to indicate successful completion"
+        },
+        "diagnostics": {
+          "type": "array",
+          "description": "Optional warnings or errors to display to the user",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning"],
+                "description": "Diagnostic severity level"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Short description of the diagnostic"
+              },
+              "detail": {
+                "type": "string",
+                "description": "Additional context about the diagnostic"
+              },
+              "propPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path to the property this diagnostic relates to"
+              }
+            },
+            "required": ["severity", "summary", "detail"]
+          }
         }
       },
       "required": ["done"]
