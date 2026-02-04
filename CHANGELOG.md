@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.2.6](https://github.com/brad-jones/terraform-provider-denobridge/compare/c2ed20674b74f03373c380d8d3576994c3538294..v0.2.6) - 2026-02-04
+#### Bug Fixes
+- all methods can return structured diagnostics now - ([75bad15](https://github.com/brad-jones/terraform-provider-denobridge/commit/75bad15fbfa4a469a559f5765a20d422c60b86f6)) - github-actions[bot]
+#### Documentation
+- updated docs to reflect that all methods can return structured diagnostics now - ([8aebf29](https://github.com/brad-jones/terraform-provider-denobridge/commit/8aebf298d9dc85ef723690406a6f02dfbf15da93)) - github-actions[bot]
+#### Miscellaneous Chores
+- bump pixi lock file - ([c2ed206](https://github.com/brad-jones/terraform-provider-denobridge/commit/c2ed20674b74f03373c380d8d3576994c3538294)) - github-actions[bot]
+
+- - -
+
 ## [v0.2.5](https://github.com/brad-jones/terraform-provider-denobridge/compare/98bc4a27a4042aca618202debd6f3ac8be37c95c..v0.2.5) - 2026-02-03
 #### Bug Fixes
 - (**BaseJsonRpcProvider**) wrap all methods and log uncaught errors to stderr - ([454d80c](https://github.com/brad-jones/terraform-provider-denobridge/commit/454d80c4505db7bac048f9b5c13a3c66bdbb93c2)) - github-actions[bot]

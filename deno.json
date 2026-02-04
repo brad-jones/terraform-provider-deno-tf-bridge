@@ -1,6 +1,6 @@
 {
   "name": "@brad-jones/terraform-provider-denobridge",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "license": "MIT",
   "publish": {
     "include": [
