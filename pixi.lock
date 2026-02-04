@@ -19,7 +19,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/charset-normalizer-3.4.4-pyhd8ed1ab_0.conda
       - conda: https://prefix.dev/brads-forge/linux-64/cocogitto-6.5.0-h81b34b9_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/defusedxml-0.7.1-pyhd8ed1ab_0.tar.bz2
-      - conda: https://prefix.dev/brads-forge/linux-64/deno-2.6.7-h81b34b9_4.conda
+      - conda: https://prefix.dev/brads-forge/linux-64/deno-2.6.8-h81b34b9_4.conda
       - conda: https://prefix.dev/brads-forge/linux-64/dprint-0.51.1-h81b34b9_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/go-1.25.6-h282a287_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/golangci-lint-2.8.0-hfc2019e_0.conda
@@ -78,7 +78,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/charset-normalizer-3.4.4-pyhd8ed1ab_0.conda
       - conda: https://prefix.dev/brads-forge/osx-64/cocogitto-6.5.0-he0f4bc8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/defusedxml-0.7.1-pyhd8ed1ab_0.tar.bz2
-      - conda: https://prefix.dev/brads-forge/osx-64/deno-2.6.7-he0f4bc8_4.conda
+      - conda: https://prefix.dev/brads-forge/osx-64/deno-2.6.8-he0f4bc8_4.conda
       - conda: https://prefix.dev/brads-forge/osx-64/dprint-0.51.1-he0f4bc8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/go-1.25.6-ha1b6bfe_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/golangci-lint-2.8.0-hccc6df8_0.conda
@@ -134,7 +134,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/charset-normalizer-3.4.4-pyhd8ed1ab_0.conda
       - conda: https://prefix.dev/brads-forge/osx-arm64/cocogitto-6.5.0-he8ea13f_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/defusedxml-0.7.1-pyhd8ed1ab_0.tar.bz2
-      - conda: https://prefix.dev/brads-forge/osx-arm64/deno-2.6.7-he8ea13f_4.conda
+      - conda: https://prefix.dev/brads-forge/osx-arm64/deno-2.6.8-he8ea13f_4.conda
       - conda: https://prefix.dev/brads-forge/osx-arm64/dprint-0.51.1-he8ea13f_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/go-1.25.6-ha44b283_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/golangci-lint-2.8.0-h820172f_0.conda
@@ -192,7 +192,7 @@ environments:
       - conda: https://prefix.dev/brads-forge/win-64/cocogitto-6.5.0-h3c70cbc_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/colorama-0.4.6-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/defusedxml-0.7.1-pyhd8ed1ab_0.tar.bz2
-      - conda: https://prefix.dev/brads-forge/win-64/deno-2.6.7-h3c70cbc_4.conda
+      - conda: https://prefix.dev/brads-forge/win-64/deno-2.6.8-h3c70cbc_4.conda
       - conda: https://prefix.dev/brads-forge/win-64/dprint-0.51.1-h3c70cbc_2.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/go-1.25.6-h59133dd_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/golangci-lint-2.8.0-h11686cb_0.conda
@@ -540,26 +540,26 @@ packages:
   license_family: PSF
   size: 24062
   timestamp: 1615232388757
-- conda: https://prefix.dev/brads-forge/linux-64/deno-2.6.7-h81b34b9_4.conda
-  sha256: 56cdd1294f5ee7c66ad704d426481c65aaaaa8579e63c9f565ba16723e8f4988
+- conda: https://prefix.dev/brads-forge/linux-64/deno-2.6.8-h81b34b9_4.conda
+  sha256: 7f6044f2a8c9bd6ea3092f3995fc1e127c75de169769cdc8542284369c29e749
   license: MIT
-  size: 40675407
-  timestamp: 1769748945603
-- conda: https://prefix.dev/brads-forge/osx-64/deno-2.6.7-he0f4bc8_4.conda
-  sha256: bd9b6057c5df528e060cc318881431264632b8e12112450dcfcceb522ef03b8c
+  size: 40698578
+  timestamp: 1770095010207
+- conda: https://prefix.dev/brads-forge/osx-64/deno-2.6.8-he0f4bc8_4.conda
+  sha256: eb421b7374021d2f921109350a21368eab9960d16c4d84c388af189755913c2b
   license: MIT
-  size: 38399546
-  timestamp: 1769749001321
-- conda: https://prefix.dev/brads-forge/osx-arm64/deno-2.6.7-he8ea13f_4.conda
-  sha256: 4297cc728ed285ba5a63bf85fc1ab765c70f8c3b48ea556158697e6b7cdf7a57
+  size: 38437401
+  timestamp: 1770095156113
+- conda: https://prefix.dev/brads-forge/osx-arm64/deno-2.6.8-he8ea13f_4.conda
+  sha256: 269bf11d503c6fd552b7d97cf33ba7ebaae7c7a02829b58108d65a2af53286fd
   license: MIT
-  size: 37211900
-  timestamp: 1769748957052
-- conda: https://prefix.dev/brads-forge/win-64/deno-2.6.7-h3c70cbc_4.conda
-  sha256: d08627b9c039eefbaa76a5cf88986b794c496bea116cff7ba4dcab02bc1ce8eb
+  size: 37224794
+  timestamp: 1770095118702
+- conda: https://prefix.dev/brads-forge/win-64/deno-2.6.8-h3c70cbc_4.conda
+  sha256: 545dd41ec939a1ecf352bd0d4c4be55dc8350a73c1182c1838f3c91e5880a4df
   license: MIT
-  size: 41230390
-  timestamp: 1769748898708
+  size: 41235828
+  timestamp: 1770095071248
 - conda: https://prefix.dev/brads-forge/linux-64/dprint-0.51.1-h81b34b9_2.conda
   sha256: 9824785b5e115943e19c3948f98c7d158627c29073131837cc4e82ae5893558c
   license: MIT
@@ -1720,6 +1720,7 @@ packages:
   - typing_extensions >=4.0.0,<5.0.0
   - python
   license: MIT
+  license_family: MIT
   size: 208269
   timestamp: 1769971520792
 - conda: https://conda.anaconda.org/conda-forge/noarch/setuptools-80.10.2-pyh332efcf_0.conda
