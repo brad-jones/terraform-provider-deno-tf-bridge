@@ -24,6 +24,7 @@
     "**/.pixi",
     "**/dist",
     "*.lock*",
+    "deno.json",
     "CHANGELOG.md"
   ],
   "plugins": [
