@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.2.7](https://github.com/brad-jones/terraform-provider-denobridge/compare/72f2c0e6fa1ab0f4faa6726a528b47684baa104c..v0.2.7) - 2026-02-11
+#### Bug Fixes
+- enhance FromDynamic and FromValue to support Tuple types - ([72f2c0e](https://github.com/brad-jones/terraform-provider-denobridge/commit/72f2c0e6fa1ab0f4faa6726a528b47684baa104c)) - [@brad-jones](https://github.com/brad-jones)
+#### Build system
+- stop trying to format the deno json file - ([11ba409](https://github.com/brad-jones/terraform-provider-denobridge/commit/11ba409ceffb2cb6aa61ecb88959076c4c6a68a8)) - [@brad-jones](https://github.com/brad-jones)
+
+- - -
+
 ## [v0.2.6](https://github.com/brad-jones/terraform-provider-denobridge/compare/c2ed20674b74f03373c380d8d3576994c3538294..v0.2.6) - 2026-02-04
 #### Bug Fixes
 - all methods can return structured diagnostics now - ([75bad15](https://github.com/brad-jones/terraform-provider-denobridge/commit/75bad15fbfa4a469a559f5765a20d422c60b86f6)) - github-actions[bot]
