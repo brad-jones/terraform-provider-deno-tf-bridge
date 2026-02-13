@@ -2,6 +2,32 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.3.0](https://github.com/brad-jones/terraform-provider-denobridge/compare/6456dec71c41a5fe8317a1add2ac56c7508d3e75..v0.3.0) - 2026-02-13
+#### Features
+- (**datasource**) add support for sensitive state management - ([2253e14](https://github.com/brad-jones/terraform-provider-denobridge/commit/2253e14ba992acfe8fddaa4e9354302a7bd38f19)) - [@brad-jones](https://github.com/brad-jones)
+- (**ephemeral**) add support for sensitive state management - ([1fcf2d4](https://github.com/brad-jones/terraform-provider-denobridge/commit/1fcf2d483ac84c49440820aa44382ac590de850e)) - [@brad-jones](https://github.com/brad-jones)
+- (**lib**) inject DENOBRIDGE_VERSION constant for use in cdkts - ([b8d2792](https://github.com/brad-jones/terraform-provider-denobridge/commit/b8d2792d5c437a2a6f09bc5b3fb8cc5009663a9f)) - [@brad-jones](https://github.com/brad-jones)
+- (**resource**) add support for sensitive state management - ([5112078](https://github.com/brad-jones/terraform-provider-denobridge/commit/5112078e7be165f54a4c684a6e41b460cf9071e5)) - [@brad-jones](https://github.com/brad-jones)
+#### Bug Fixes
+- (**action**) ensure CLI output alignment in InvokeProgress method - ([430f3f2](https://github.com/brad-jones/terraform-provider-denobridge/commit/430f3f2197a14810210a5c2f7649bf1113b96ff8)) - [@brad-jones](https://github.com/brad-jones)
+- (**resource**) type error in example - ([548f15e](https://github.com/brad-jones/terraform-provider-denobridge/commit/548f15e04f9a737a98141bd40599cd608dabafa0)) - [@brad-jones](https://github.com/brad-jones)
+- (**resource**) state is now truly optional - ([4561a66](https://github.com/brad-jones/terraform-provider-denobridge/commit/4561a661d47ef306ae568542467c79c5ca8c2f0d)) - [@brad-jones](https://github.com/brad-jones)
+#### Documentation
+- re-gen from templates - ([6f9b02b](https://github.com/brad-jones/terraform-provider-denobridge/commit/6f9b02b010309f794ab13dd7aa0d8cd0cde0c60e)) - [@brad-jones](https://github.com/brad-jones)
+#### Tests
+- (**resource**) improve comments and null safety in modifyPlan method - ([b3aefc2](https://github.com/brad-jones/terraform-provider-denobridge/commit/b3aefc27cf15c7b9a199ee7abfc40e098731fade)) - [@brad-jones](https://github.com/brad-jones)
+#### Build system
+- fix up golangci-lint install - ([637a4e8](https://github.com/brad-jones/terraform-provider-denobridge/commit/637a4e8c9549080ba1742099c0583f57a33c9a91)) - [@brad-jones](https://github.com/brad-jones)
+- always format after generating docs - ([a7d50f1](https://github.com/brad-jones/terraform-provider-denobridge/commit/a7d50f1e9dd9487f76001927b5e34b4a89b0f191)) - [@brad-jones](https://github.com/brad-jones)
+#### Miscellaneous Chores
+- tweaks to examples - ([c643ed6](https://github.com/brad-jones/terraform-provider-denobridge/commit/c643ed63698d63e462ac63ea3f554423e3b9690c)) - [@brad-jones](https://github.com/brad-jones)
+- bump pixi deps - ([6456dec](https://github.com/brad-jones/terraform-provider-denobridge/commit/6456dec71c41a5fe8317a1add2ac56c7508d3e75)) - [@brad-jones](https://github.com/brad-jones)
+#### Style
+- (**lib**) more whitespace improvements in comments for readability - ([9c368cf](https://github.com/brad-jones/terraform-provider-denobridge/commit/9c368cf89f6810cbcf6cbd0a231644e1ec7eab82)) - [@brad-jones](https://github.com/brad-jones)
+- (**resource**) add spacing for improved readability in ResourceProviderMethods type - ([d169ed7](https://github.com/brad-jones/terraform-provider-denobridge/commit/d169ed79111d5dd10d1f76fa00fa1437be51cbde)) - [@brad-jones](https://github.com/brad-jones)
+
+- - -
+
 ## [v0.2.7](https://github.com/brad-jones/terraform-provider-denobridge/compare/72f2c0e6fa1ab0f4faa6726a528b47684baa104c..v0.2.7) - 2026-02-11
 #### Bug Fixes
 - enhance FromDynamic and FromValue to support Tuple types - ([72f2c0e](https://github.com/brad-jones/terraform-provider-denobridge/commit/72f2c0e6fa1ab0f4faa6726a528b47684baa104c)) - [@brad-jones](https://github.com/brad-jones)
