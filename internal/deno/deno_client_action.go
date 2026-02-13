@@ -3,6 +3,7 @@ package deno
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/brad-jones/terraform-provider-denobridge/internal/jsocket"
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -102,7 +103,14 @@ type InvokeProgressRequest struct {
 //   - ctx: The context for the operation (currently unused but required by JSON-RPC interface)
 //   - params: The progress request containing the message to display
 func (c *DenoClientActionServerMethods) InvokeProgress(ctx context.Context, params *InvokeProgressRequest) {
+	message := params.Message
+
+	// ensure that the terraform cli output doesn't become misaligned.
+	if !strings.HasSuffix(message, "\r") {
+		message += "\r"
+	}
+
 	c.resp.SendProgress(action.InvokeProgressEvent{
-		Message: params.Message,
+		Message: message,
 	})
 }
