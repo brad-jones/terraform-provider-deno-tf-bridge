@@ -47,6 +47,7 @@ tasks:
       - if: "! which tfplugindocs"
         cmd: go install -v github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
       - tfplugindocs generate
+      - task: fmt
 
   lint:
     desc: Lints our code to ensure it remains of a high quality.
