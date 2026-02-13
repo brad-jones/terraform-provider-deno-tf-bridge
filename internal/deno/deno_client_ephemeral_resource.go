@@ -50,6 +50,8 @@ type OpenRequest struct {
 type OpenResponse struct {
 	// Result contains the ephemeral resource data to be made available during the Terraform operation
 	Result any `json:"result"`
+	// SensitiveResult contains the ephemeral resource sensitive data (marked as sensitive in Terraform)
+	SensitiveResult any `json:"sensitiveResult"`
 	// RenewAt is an optional Unix timestamp (in seconds) indicating when the resource should be renewed
 	RenewAt *int64 `json:"renewAt,omitempty"`
 	// Private is optional private state data that will be passed to subsequent renew and close calls

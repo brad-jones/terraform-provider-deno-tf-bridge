@@ -587,6 +587,10 @@
               "type": "object",
               "description": "The ephemeral data to be made available"
             },
+            "sensitiveResult": {
+              "type": "object",
+              "description": "Sensitive ephemeral data (marked as sensitive in Terraform)"
+            },
             "renewAt": {
               "type": "integer",
               "description": "Unix timestamp in seconds when renewal should occur"

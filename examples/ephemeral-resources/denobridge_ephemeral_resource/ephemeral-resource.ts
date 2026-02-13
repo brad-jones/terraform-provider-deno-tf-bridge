@@ -6,6 +6,9 @@ interface Props {
 
 interface Result {
   uuid: string;
+  sensitive: {
+    token: string;
+  };
 }
 
 new EphemeralResourceProvider<Props, Result>({
@@ -14,6 +17,15 @@ new EphemeralResourceProvider<Props, Result>({
     if (type !== "v4") {
       throw new Error("Unsupported UUID type");
     }
-    return { result: { uuid: crypto.randomUUID() } };
+    return {
+      result: {
+        uuid: crypto.randomUUID(),
+        // Values nested under the "sensitive" key are automatically
+        // stored in the `sensitive_result` attribute in Terraform.
+        sensitive: {
+          token: "secret-api-token",
+        },
+      },
+    };
   },
 });

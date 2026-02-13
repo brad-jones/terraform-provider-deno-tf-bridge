@@ -19,6 +19,8 @@ export type EphemeralResourceProviderMethods<TProps, TResult, TPrivateData = nev
    * @param props - The properties/configuration for the ephemeral resource.
    * @returns A promise that resolves to an object containing the result data, an optional
    *          renewal timestamp, and optional private data to maintain between operations.
+   *          Place any sensitive values under a "sensitive" key within the result to have
+   *          them automatically marked as sensitive in Terraform.
    */
   open(props: TProps): Promise<
     Diagnostics | {
@@ -71,7 +73,20 @@ export class EphemeralResourceProvider<TProps, TResult, TPrivateData = never> ex
   constructor(providerMethods: EphemeralResourceProviderMethods<TProps, TResult, TPrivateData>) {
     super(() => ({
       async open(params: { props: Record<string, unknown> }) {
-        return await providerMethods.open(params.props as TProps);
+        const result = await providerMethods.open(params.props as TProps);
+
+        if (isDiagnostics(result)) return result;
+
+        // deno-lint-ignore no-explicit-any
+        const sensitiveResult = (result.result as any)?.sensitive;
+
+        // deno-lint-ignore no-explicit-any
+        const resultData = result.result as any;
+        if (resultData && "sensitive" in resultData) {
+          delete resultData["sensitive"];
+        }
+
+        return { ...result, result: resultData, sensitiveResult };
       },
       async renew(params: { privateData: TPrivateData }) {
         if (!providerMethods.renew) throw new JSONRPCMethodNotFoundError();

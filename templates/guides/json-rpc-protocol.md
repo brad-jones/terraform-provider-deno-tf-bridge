@@ -1066,6 +1066,9 @@ Opens an ephemeral resource, optionally with automatic renewal.
     "result": {
       "// Ephemeral data": "..."
     },
+    "sensitiveResult": {
+      "// Sensitive ephemeral data": "..."
+    },
     "renewAt": 1735891200000,
     "privateData": {
       "// Internal data for renewal/close": "..."
@@ -1085,6 +1088,7 @@ Opens an ephemeral resource, optionally with automatic renewal.
 **Fields:**
 
 - `result` (required): The ephemeral data to be made available
+- `sensitiveResult` (optional): Sensitive ephemeral data (marked as sensitive in Terraform, not displayed in logs or plan output)
 - `renewAt` (optional): Unix timestamp in seconds when renewal should occur
 - `privateData` (optional): Private data passed back to renew/close methods (not exposed to Terraform)
 - `diagnostics` (optional): Warnings or errors to display to the user
@@ -1119,6 +1123,10 @@ Opens an ephemeral resource, optionally with automatic renewal.
         "result": {
           "type": "object",
           "description": "The ephemeral data to be made available"
+        },
+        "sensitiveResult": {
+          "type": "object",
+          "description": "Sensitive ephemeral data (marked as sensitive in Terraform)"
         },
         "renewAt": {
           "type": "integer",

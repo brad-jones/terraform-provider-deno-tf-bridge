@@ -33,11 +33,12 @@ type denoBridgeEphemeralResource struct {
 
 // denoBridgeEphemeralResourceModel maps the resource schema data.
 type denoBridgeEphemeralResourceModel struct {
-	Path        types.String        `tfsdk:"path"`
-	Props       types.Dynamic       `tfsdk:"props"`
-	Result      types.Dynamic       `tfsdk:"result"`
-	ConfigFile  types.String        `tfsdk:"config_file"`
-	Permissions *deno.PermissionsTF `tfsdk:"permissions"`
+	Path            types.String        `tfsdk:"path"`
+	Props           types.Dynamic       `tfsdk:"props"`
+	Result          types.Dynamic       `tfsdk:"result"`
+	SensitiveResult types.Dynamic       `tfsdk:"sensitive_result"`
+	ConfigFile      types.String        `tfsdk:"config_file"`
+	Permissions     *deno.PermissionsTF `tfsdk:"permissions"`
 }
 
 func (r *denoBridgeEphemeralResource) Metadata(_ context.Context, req ephemeral.MetadataRequest, resp *ephemeral.MetadataResponse) {
@@ -59,6 +60,11 @@ func (r *denoBridgeEphemeralResource) Schema(_ context.Context, _ ephemeral.Sche
 			"result": schema.DynamicAttribute{
 				Description: "Output data returned from the Deno script.",
 				Computed:    true,
+			},
+			"sensitive_result": schema.DynamicAttribute{
+				Description: "Sensitive output data returned from the Deno script.",
+				Computed:    true,
+				Sensitive:   true,
 			},
 			"config_file": schema.StringAttribute{
 				Description: "File path to a deno config file to use with the deno script. Useful for import maps, etc...",
@@ -202,6 +208,7 @@ func (r *denoBridgeEphemeralResource) Open(ctx context.Context, req ephemeral.Op
 
 	// Set result
 	data.Result = dynamic.ToDynamic(response.Result)
+	data.SensitiveResult = dynamic.ToDynamic(response.SensitiveResult)
 	resp.Diagnostics.Append(resp.Result.Set(ctx, &data)...)
 }
 
