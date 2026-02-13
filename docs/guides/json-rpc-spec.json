@@ -72,6 +72,10 @@
               "type": "object",
               "description": "Computed state values for the resource"
             },
+            "sensitiveState": {
+              "type": "object",
+              "description": "Sensitive computed state values for the resource (marked as sensitive in Terraform)"
+            },
             "diagnostics": {
               "type": "array",
               "description": "Optional warnings or errors to display to the user",
@@ -170,6 +174,10 @@
                   "type": "object",
                   "description": "Refreshed computed state"
                 },
+                "sensitiveState": {
+                  "type": "object",
+                  "description": "Refreshed sensitive computed state"
+                },
                 "diagnostics": {
                   "type": "array",
                   "description": "Optional warnings or errors to display to the user",
@@ -222,6 +230,10 @@
                 "result": {
                   "type": "object",
                   "description": "Retrieved data from the external source"
+                },
+                "sensitiveResult": {
+                  "type": "object",
+                  "description": "Sensitive retrieved data from the external source (marked as sensitive in Terraform)"
                 },
                 "diagnostics": {
                   "type": "array",
@@ -290,6 +302,10 @@
               "currentState": {
                 "type": "object",
                 "description": "Current computed state before the update"
+              },
+              "currentSensitiveState": {
+                "type": "object",
+                "description": "Current sensitive computed state before the update"
               }
             },
             "required": ["id", "nextProps", "currentProps", "currentState"]
@@ -304,6 +320,10 @@
             "state": {
               "type": "object",
               "description": "Updated computed state after the update"
+            },
+            "sensitiveState": {
+              "type": "object",
+              "description": "Updated sensitive computed state after the update"
             },
             "diagnostics": {
               "type": "array",
@@ -366,6 +386,10 @@
               "state": {
                 "type": "object",
                 "description": "Current computed state"
+              },
+              "sensitiveState": {
+                "type": "object",
+                "description": "Current sensitive computed state"
               }
             },
             "required": ["id", "props", "state"]
@@ -451,6 +475,10 @@
               "currentState": {
                 "type": ["object", "null"],
                 "description": "Current computed state (null for create)"
+              },
+              "currentSensitiveState": {
+                "type": ["object", "null"],
+                "description": "Current sensitive computed state (not present during create)"
               }
             },
             "required": ["planType"]
@@ -558,6 +586,10 @@
             "result": {
               "type": "object",
               "description": "The ephemeral data to be made available"
+            },
+            "sensitiveResult": {
+              "type": "object",
+              "description": "Sensitive ephemeral data (marked as sensitive in Terraform)"
             },
             "renewAt": {
               "type": "integer",

@@ -70,6 +70,7 @@ resource "foo" "bar" {
 ### Read-Only
 
 - `result` (Dynamic) Output data returned from the Deno script.
+- `sensitive_result` (Dynamic, Sensitive) Sensitive output data returned from the Deno script.
 
 <a id="nestedatt--permissions"></a>
 
@@ -103,6 +104,42 @@ new DatasourceProvider<Props, Result>({
       ips: await Deno.resolveDns(query, recordType, {
         nameServer: { ipAddr: "1.1.1.1", port: 53 },
       }),
+    };
+  },
+});
+```
+
+### Sensitive Results
+
+If your datasource needs to return sensitive data (e.g., passwords, tokens),
+nest those values under a `sensitive` key in the result. They will automatically
+be stored in the `sensitive_result` attribute in Terraform, which is marked as
+sensitive and won't appear in plan output or logs.
+
+```ts
+import { DatasourceProvider } from "@brad-jones/terraform-provider-denobridge";
+
+interface Props {
+  name: string;
+}
+
+interface Result {
+  id: string;
+  sensitive: {
+    apiKey: string;
+  };
+}
+
+new DatasourceProvider<Props, Result>({
+  async read({ name }) {
+    const creds = await fetchCredentials(name);
+    return {
+      id: creds.id,
+      // Values nested under the "sensitive" key are automatically
+      // stored in the `sensitive_result` attribute in Terraform.
+      sensitive: {
+        apiKey: creds.apiKey,
+      },
     };
   },
 });

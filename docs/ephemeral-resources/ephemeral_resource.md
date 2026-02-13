@@ -69,6 +69,7 @@ resource "foo" "bar" {
 ### Read-Only
 
 - `result` (Dynamic) Output data returned from the Deno script.
+- `sensitive_result` (Dynamic, Sensitive) Sensitive output data returned from the Deno script.
 
 <a id="nestedatt--permissions"></a>
 
@@ -93,6 +94,9 @@ interface Props {
 
 interface Result {
   uuid: string;
+  sensitive: {
+    token: string;
+  };
 }
 
 new EphemeralResourceProvider<Props, Result>({
@@ -100,7 +104,16 @@ new EphemeralResourceProvider<Props, Result>({
     if (type !== "v4") {
       throw new Error("Unsupported UUID type");
     }
-    return { result: { uuid: crypto.randomUUID() } };
+    return {
+      result: {
+        uuid: crypto.randomUUID(),
+        // Values nested under the "sensitive" key are automatically
+        // stored in the `sensitive_result` attribute in Terraform.
+        sensitive: {
+          token: "secret-api-token",
+        },
+      },
+    };
   },
 });
 ```
@@ -120,6 +133,9 @@ const Props = z.object({
 
 const Result = z.object({
   uuid: z.string(),
+  sensitive: z.object({
+    token: z.string(),
+  }),
 });
 
 new ZodEphemeralResourceProvider(Props, Result, {

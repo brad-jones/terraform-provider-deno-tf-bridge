@@ -195,6 +195,9 @@ Creates a new resource instance.
     "state": {
       "// Computed state values": "..."
     },
+    "sensitiveState": {
+      "// Sensitive computed state values": "..."
+    },
     "diagnostics": [
       {
         "severity": "warning",
@@ -244,6 +247,10 @@ Creates a new resource instance.
         "state": {
           "type": "object",
           "description": "Computed state values for the resource"
+        },
+        "sensitiveState": {
+          "type": "object",
+          "description": "Sensitive computed state values for the resource (marked as sensitive in Terraform)"
         },
         "diagnostics": {
           "type": "array",
@@ -316,6 +323,9 @@ Reads the current state of a resource instance. Can indicate resource no longer 
     "state": {
       "// Refreshed computed state": "..."
     },
+    "sensitiveState": {
+      "// Refreshed sensitive computed state": "..."
+    },
     "diagnostics": [
       {
         "severity": "warning",
@@ -383,6 +393,10 @@ Reads the current state of a resource instance. Can indicate resource no longer 
             "state": {
               "type": "object",
               "description": "Refreshed computed state"
+            },
+            "sensitiveState": {
+              "type": "object",
+              "description": "Refreshed sensitive computed state"
             },
             "diagnostics": {
               "type": "array",
@@ -456,6 +470,9 @@ Updates an existing resource instance with new configuration.
     },
     "currentState": {
       "// Current computed state": "..."
+    },
+    "currentSensitiveState": {
+      "// Current sensitive computed state": "..."
     }
   },
   "id": 5
@@ -470,6 +487,9 @@ Updates an existing resource instance with new configuration.
   "result": {
     "state": {
       "// Updated computed state": "..."
+    },
+    "sensitiveState": {
+      "// Updated sensitive computed state": "..."
     },
     "diagnostics": [
       {
@@ -513,6 +533,10 @@ Updates an existing resource instance with new configuration.
           "currentState": {
             "type": "object",
             "description": "Current computed state before the update"
+          },
+          "currentSensitiveState": {
+            "type": "object",
+            "description": "Current sensitive computed state before the update"
           }
         },
         "required": ["id", "nextProps", "currentProps", "currentState"]
@@ -527,6 +551,10 @@ Updates an existing resource instance with new configuration.
         "state": {
           "type": "object",
           "description": "Updated computed state after the update"
+        },
+        "sensitiveState": {
+          "type": "object",
+          "description": "Updated sensitive computed state after the update"
         },
         "diagnostics": {
           "type": "array",
@@ -584,6 +612,9 @@ Deletes a resource instance.
     },
     "state": {
       "// Current computed state": "..."
+    },
+    "sensitiveState": {
+      "// Current sensitive computed state": "..."
     }
   },
   "id": 6
@@ -635,6 +666,10 @@ Deletes a resource instance.
           "state": {
             "type": "object",
             "description": "Current computed state"
+          },
+          "sensitiveState": {
+            "type": "object",
+            "description": "Current sensitive computed state"
           }
         },
         "required": ["id", "props", "state"]
@@ -710,6 +745,9 @@ Allows the resource to modify planned values before apply or indicate that a res
     },
     "currentState": {
       "// Current computed state": "..."
+    },
+    "currentSensitiveState": {
+      "// Current sensitive computed state": "..."
     }
   },
   "id": 7
@@ -797,6 +835,10 @@ Allows the resource to modify planned values before apply or indicate that a res
           "currentState": {
             "type": ["object", "null"],
             "description": "Current computed state (null for create)"
+          },
+          "currentSensitiveState": {
+            "type": ["object", "null"],
+            "description": "Current sensitive computed state (null for create)"
           }
         },
         "required": ["planType", "nextProps"]
@@ -908,6 +950,9 @@ Reads data from an external source based on the provided configuration.
     "result": {
       "// Retrieved data": "..."
     },
+    "sensitiveResult": {
+      "// Sensitive retrieved data": "..."
+    },
     "diagnostics": [
       {
         "severity": "warning",
@@ -920,7 +965,11 @@ Reads data from an external source based on the provided configuration.
 }
 ```
 
-**Note**: The `diagnostics` field is optional and can be omitted if there are no warnings or errors to report.
+**Fields:**
+
+- `result` (required): The data retrieved from the external source
+- `sensitiveResult` (optional): Sensitive data (marked as sensitive in Terraform, not displayed in logs or plan output)
+- `diagnostics` (optional): Warnings or errors to display to the user
 
 #### OpenRPC Schema
 
@@ -952,6 +1001,10 @@ Reads data from an external source based on the provided configuration.
         "result": {
           "type": "object",
           "description": "Retrieved data from the external source"
+        },
+        "sensitiveResult": {
+          "type": "object",
+          "description": "Sensitive retrieved data from the external source (marked as sensitive in Terraform)"
         },
         "diagnostics": {
           "type": "array",
@@ -1024,6 +1077,9 @@ Opens an ephemeral resource, optionally with automatic renewal.
     "result": {
       "// Ephemeral data": "..."
     },
+    "sensitiveResult": {
+      "// Sensitive ephemeral data": "..."
+    },
     "renewAt": 1735891200000,
     "privateData": {
       "// Internal data for renewal/close": "..."
@@ -1043,6 +1099,7 @@ Opens an ephemeral resource, optionally with automatic renewal.
 **Fields:**
 
 - `result` (required): The ephemeral data to be made available
+- `sensitiveResult` (optional): Sensitive ephemeral data (marked as sensitive in Terraform, not displayed in logs or plan output)
 - `renewAt` (optional): Unix timestamp in seconds when renewal should occur
 - `privateData` (optional): Private data passed back to renew/close methods (not exposed to Terraform)
 - `diagnostics` (optional): Warnings or errors to display to the user
@@ -1077,6 +1134,10 @@ Opens an ephemeral resource, optionally with automatic renewal.
         "result": {
           "type": "object",
           "description": "The ephemeral data to be made available"
+        },
+        "sensitiveResult": {
+          "type": "object",
+          "description": "Sensitive ephemeral data (marked as sensitive in Terraform)"
         },
         "renewAt": {
           "type": "integer",
