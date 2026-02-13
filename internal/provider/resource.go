@@ -183,9 +183,7 @@ func (r *denoBridgeResource) Create(ctx context.Context, req resource.CreateRequ
 
 	// Set state
 	plan.ID = types.StringValue(response.ID)
-	if response.State != nil {
-		plan.State = dynamic.ToDynamic(response.State)
-	}
+	plan.State = dynamic.ToDynamic(response.State)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
@@ -258,9 +256,7 @@ func (r *denoBridgeResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	// Set refreshed state
 	state.Props = dynamic.ToDynamic(response.Props)
-	if response.State != nil {
-		state.State = dynamic.ToDynamic(response.State)
-	}
+	state.State = dynamic.ToDynamic(response.State)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -343,9 +339,7 @@ func (r *denoBridgeResource) Update(ctx context.Context, req resource.UpdateRequ
 	plan.ID = state.ID
 
 	// Set updated state
-	if response.State != nil {
-		plan.State = dynamic.ToDynamic(response.State)
-	}
+	plan.State = dynamic.ToDynamic(response.State)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 

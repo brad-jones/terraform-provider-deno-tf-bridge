@@ -71,6 +71,36 @@
             "state": {
               "type": "object",
               "description": "Computed state values for the resource"
+            },
+            "diagnostics": {
+              "type": "array",
+              "description": "Optional warnings or errors to display to the user",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning"],
+                    "description": "Diagnostic severity level"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Short description of the diagnostic"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Additional context about the diagnostic"
+                  },
+                  "propPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Path to the property this diagnostic relates to"
+                  }
+                },
+                "required": ["severity", "summary", "detail"]
+              }
             }
           },
           "required": ["id", "state"]
@@ -139,6 +169,36 @@
                 "state": {
                   "type": "object",
                   "description": "Refreshed computed state"
+                },
+                "diagnostics": {
+                  "type": "array",
+                  "description": "Optional warnings or errors to display to the user",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "severity": {
+                        "type": "string",
+                        "enum": ["error", "warning"],
+                        "description": "Diagnostic severity level"
+                      },
+                      "summary": {
+                        "type": "string",
+                        "description": "Short description of the diagnostic"
+                      },
+                      "detail": {
+                        "type": "string",
+                        "description": "Additional context about the diagnostic"
+                      },
+                      "propPath": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Path to the property this diagnostic relates to"
+                      }
+                    },
+                    "required": ["severity", "summary", "detail"]
+                  }
                 }
               },
               "required": ["props", "state"]
@@ -162,6 +222,36 @@
                 "result": {
                   "type": "object",
                   "description": "Retrieved data from the external source"
+                },
+                "diagnostics": {
+                  "type": "array",
+                  "description": "Optional warnings or errors to display to the user",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "severity": {
+                        "type": "string",
+                        "enum": ["error", "warning"],
+                        "description": "Diagnostic severity level"
+                      },
+                      "summary": {
+                        "type": "string",
+                        "description": "Short description of the diagnostic"
+                      },
+                      "detail": {
+                        "type": "string",
+                        "description": "Additional context about the diagnostic"
+                      },
+                      "propPath": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Path to the property this diagnostic relates to"
+                      }
+                    },
+                    "required": ["severity", "summary", "detail"]
+                  }
                 }
               },
               "required": ["result"]
@@ -214,6 +304,36 @@
             "state": {
               "type": "object",
               "description": "Updated computed state after the update"
+            },
+            "diagnostics": {
+              "type": "array",
+              "description": "Optional warnings or errors to display to the user",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning"],
+                    "description": "Diagnostic severity level"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Short description of the diagnostic"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Additional context about the diagnostic"
+                  },
+                  "propPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Path to the property this diagnostic relates to"
+                  }
+                },
+                "required": ["severity", "summary", "detail"]
+              }
             }
           },
           "required": ["state"]
@@ -260,6 +380,36 @@
             "done": {
               "type": "boolean",
               "description": "Must be true to indicate successful deletion"
+            },
+            "diagnostics": {
+              "type": "array",
+              "description": "Optional warnings or errors to display to the user",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning"],
+                    "description": "Diagnostic severity level"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Short description of the diagnostic"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Additional context about the diagnostic"
+                  },
+                  "propPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Path to the property this diagnostic relates to"
+                  }
+                },
+                "required": ["severity", "summary", "detail"]
+              }
             }
           },
           "required": ["done"]
@@ -343,8 +493,12 @@
                       "detail": {
                         "type": "string"
                       },
-                      "propName": {
-                        "type": "string"
+                      "propPath": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Path to the property this diagnostic relates to"
                       }
                     },
                     "required": ["severity", "summary", "detail"]
@@ -412,6 +566,36 @@
             "privateData": {
               "type": "object",
               "description": "Private data for internal use (passed to renew/close)"
+            },
+            "diagnostics": {
+              "type": "array",
+              "description": "Optional warnings or errors to display to the user",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning"],
+                    "description": "Diagnostic severity level"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Short description of the diagnostic"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Additional context about the diagnostic"
+                  },
+                  "propPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Path to the property this diagnostic relates to"
+                  }
+                },
+                "required": ["severity", "summary", "detail"]
+              }
             }
           },
           "required": ["result"]
@@ -454,6 +638,36 @@
             "privateData": {
               "type": "object",
               "description": "Updated private data for next renewal or close"
+            },
+            "diagnostics": {
+              "type": "array",
+              "description": "Optional warnings or errors to display to the user",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning"],
+                    "description": "Diagnostic severity level"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Short description of the diagnostic"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Additional context about the diagnostic"
+                  },
+                  "propPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Path to the property this diagnostic relates to"
+                  }
+                },
+                "required": ["severity", "summary", "detail"]
+              }
             }
           }
         }
@@ -498,6 +712,36 @@
             "done": {
               "type": "boolean",
               "description": "Must be true to indicate successful closure"
+            },
+            "diagnostics": {
+              "type": "array",
+              "description": "Optional warnings or errors to display to the user",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning"],
+                    "description": "Diagnostic severity level"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Short description of the diagnostic"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Additional context about the diagnostic"
+                  },
+                  "propPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Path to the property this diagnostic relates to"
+                  }
+                },
+                "required": ["severity", "summary", "detail"]
+              }
             }
           },
           "required": ["done"]
@@ -543,6 +787,36 @@
             "done": {
               "type": "boolean",
               "description": "Must be true to indicate successful completion"
+            },
+            "diagnostics": {
+              "type": "array",
+              "description": "Optional warnings or errors to display to the user",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning"],
+                    "description": "Diagnostic severity level"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Short description of the diagnostic"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Additional context about the diagnostic"
+                  },
+                  "propPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Path to the property this diagnostic relates to"
+                  }
+                },
+                "required": ["severity", "summary", "detail"]
+              }
             }
           },
           "required": ["done"]

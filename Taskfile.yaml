@@ -26,16 +26,26 @@ tasks:
     env:
       GOBIN: "{{.ROOT_DIR}}/.pixi/envs/default/bin"
     cmds:
-      - go install -v github.com/cweill/gotests/gotests@v1.6.0
-      - go install -v github.com/josharian/impl@v1.4.0
-      - go install -v github.com/haya14busa/goplay/cmd/goplay@v1.0.0
-      - go install -v github.com/go-delve/delve/cmd/dlv@latest
-      - go install -v golang.org/x/tools/gopls@latest
-      - go install -v github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+      - if: "! which gotests"
+        cmd: go install -v github.com/cweill/gotests/gotests@v1.6.0
+      - if: "! which impl"
+        cmd: go install -v github.com/josharian/impl@v1.4.0
+      - if: "! which goplay"
+        cmd: go install -v github.com/haya14busa/goplay/cmd/goplay@v1.0.0
+      - if: "! which dlv"
+        cmd: go install -v github.com/go-delve/delve/cmd/dlv@latest
+      - if: "! which gopls"
+        cmd: go install -v golang.org/x/tools/gopls@latest
+      - if: "! which tfplugindocs"
+        cmd: go install -v github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+      - if: "! which golangci-lint"
+        cmd: go install -v github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 
   docs:generate:
     desc: Executes tfplugindocs to generate our ./docs folder
     cmds:
+      - if: "! which tfplugindocs"
+        cmd: go install -v github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
       - tfplugindocs generate
 
   lint:
@@ -44,6 +54,8 @@ tasks:
       - dprint check
       - deno lint
       - deno publish --dry-run --allow-dirty
+      - if: "! which golangci-lint"
+        cmd: go install -v github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
       - golangci-lint run
 
   fmt:

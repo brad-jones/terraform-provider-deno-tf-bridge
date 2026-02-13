@@ -21,7 +21,6 @@ environments:
       - conda: https://prefix.dev/brads-forge/linux-64/deno-2.6.9-h81b34b9_4.conda
       - conda: https://prefix.dev/brads-forge/linux-64/dprint-0.51.1-h81b34b9_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/go-1.26.0-h282a287_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/golangci-lint-2.9.0-hfc2019e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/goreleaser-2.11.2-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/h2-4.3.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/hpack-4.1.0-pyhd8ed1ab_0.conda
@@ -80,7 +79,6 @@ environments:
       - conda: https://prefix.dev/brads-forge/osx-64/deno-2.6.8-he0f4bc8_4.conda
       - conda: https://prefix.dev/brads-forge/osx-64/dprint-0.51.1-he0f4bc8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/go-1.26.0-ha1b6bfe_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/golangci-lint-2.9.0-hccc6df8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/goreleaser-2.11.2-h694c41f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/h2-4.3.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/hpack-4.1.0-pyhd8ed1ab_0.conda
@@ -137,7 +135,6 @@ environments:
       - conda: https://prefix.dev/brads-forge/osx-arm64/deno-2.6.9-he8ea13f_4.conda
       - conda: https://prefix.dev/brads-forge/osx-arm64/dprint-0.51.1-he8ea13f_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/go-1.26.0-ha44b283_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/golangci-lint-2.9.0-h820172f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/goreleaser-2.11.2-hce30654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/h2-4.3.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/hpack-4.1.0-pyhd8ed1ab_0.conda
@@ -195,7 +192,6 @@ environments:
       - conda: https://prefix.dev/brads-forge/win-64/deno-2.6.9-h3c70cbc_4.conda
       - conda: https://prefix.dev/brads-forge/win-64/dprint-0.51.1-h3c70cbc_2.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/go-1.26.0-h59133dd_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/win-64/golangci-lint-2.9.0-h11686cb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/goreleaser-2.11.2-h57928b3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/h2-4.3.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/hpack-4.1.0-pyhd8ed1ab_0.conda
@@ -646,36 +642,6 @@ packages:
   license_family: BSD
   size: 56151245
   timestamp: 1770770061830
-- conda: https://conda.anaconda.org/conda-forge/linux-64/golangci-lint-2.9.0-hfc2019e_0.conda
-  sha256: 13889be63e7d4b47698a7042f0485bfec9612090dd798124bcbf642886c217ba
-  md5: fb1d30b3b60e9a8f94b4dfcdedc3d65e
-  license: GPL-3.0-only
-  license_family: GPL
-  size: 14058037
-  timestamp: 1770773441716
-- conda: https://conda.anaconda.org/conda-forge/osx-64/golangci-lint-2.9.0-hccc6df8_0.conda
-  sha256: a17bda6505f073b2d7e8ee5367fa09ac43c4197e67a24e55262e9355001fce28
-  md5: b345e68755394c3e605034c4e1a7d073
-  constrains:
-  - __osx >=10.12
-  license: GPL-3.0-only
-  license_family: GPL
-  size: 13848340
-  timestamp: 1770773442420
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/golangci-lint-2.9.0-h820172f_0.conda
-  sha256: 40df1dfd802f08226199d1b30054f582c7ad849293cc6b41b76c0ae63cfd9155
-  md5: ec337a31530aa8a18f139f0d4549b4b7
-  license: GPL-3.0-only
-  license_family: GPL
-  size: 12510651
-  timestamp: 1770773442882
-- conda: https://conda.anaconda.org/conda-forge/win-64/golangci-lint-2.9.0-h11686cb_0.conda
-  sha256: 49c29fee120d49a76a6493ab8facecfa963f0b563a6abdf96cf028e28ba082bf
-  md5: c8cfa3c486cb2316e136f4f48d88e9b8
-  license: GPL-3.0-only
-  license_family: GPL
-  size: 13351650
-  timestamp: 1770773477222
 - conda: https://conda.anaconda.org/conda-forge/linux-64/goreleaser-2.11.2-ha770c72_0.conda
   sha256: 15fee50a1091dc27ee5ff3cd91052d19c0beab3d3394f899c2190e882109d756
   md5: b0f3d72a24e8017956eac1fb8e9152e1

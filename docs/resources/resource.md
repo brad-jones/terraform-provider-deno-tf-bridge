@@ -122,7 +122,62 @@ terraform import denobridge_resource.quote_of_the_day '{"id":"quote.txt","path":
 
 ## TypeScript Implementation
 
-Simply create a new instance of the `ResourceProvider`.
+Resources can be either **stateful** or **stateless**:
+
+- **Stateful Resources**: Maintain additional computed state beyond the ID and props (e.g., timestamps, checksums, server-generated values)
+- **Stateless Resources**: Only need an ID and props, without additional state tracking
+
+### Stateless Resource Example
+
+When you don't need to track additional state, omit the state type parameter:
+
+```ts
+import { ResourceProvider } from "@brad-jones/terraform-provider-denobridge";
+
+interface Props {
+  path: string;
+  content: string;
+}
+
+new ResourceProvider<Props>({
+  async create({ path, content }) {
+    await Deno.writeTextFile(path, content);
+
+    // For stateless resources, only return the ID
+    return { id: path };
+  },
+  async read(id, props) {
+    try {
+      const content = await Deno.readTextFile(id);
+      // Return only props, no state
+      return { props: { path: id, content } };
+    } catch (e) {
+      if (e instanceof Deno.errors.NotFound) {
+        return { exists: false };
+      }
+      throw e;
+    }
+  },
+  async update(id, nextProps, currentProps) {
+    if (nextProps.path !== currentProps.path) {
+      throw new Error("Cannot change file path - requires resource replacement");
+    }
+    await Deno.writeTextFile(id, nextProps.content);
+    // No state to return
+  },
+  async delete(id, props) {
+    await Deno.remove(id);
+  },
+  async modifyPlan(_id, planType, nextProps, currentProps) {
+    if (planType !== "update") return;
+    return { requiresReplacement: currentProps?.path !== nextProps.path };
+  },
+});
+```
+
+### Stateful Resource Example
+
+When you need to track additional computed state, provide both props and state types:
 
 ```ts
 import { ResourceProvider } from "@brad-jones/terraform-provider-denobridge";
@@ -222,8 +277,43 @@ new ResourceProvider<Props, State>({
 
 ### Zod Validation
 
-Alternatively you can use the `ZodResourceProvider`, this will ensure all
-input & outputs to & from your TypeScript provider are validated at runtime.
+The `ZodResourceProvider` ensures all input & outputs to & from your TypeScript provider are validated at runtime.
+
+#### Stateless with Zod
+
+For stateless resources, provide only the props schema:
+
+```ts
+import { z } from "jsr:@zod/zod";
+import { ZodResourceProvider } from "@brad-jones/terraform-provider-denobridge";
+
+const Props = z.object({
+  path: z.string(),
+  content: z.string(),
+});
+
+new ZodResourceProvider(Props, {
+  async create({ path, content }) {
+    await Deno.writeTextFile(path, content);
+    return { id: path };
+  },
+  async read(id, props) {
+    const content = await Deno.readTextFile(id);
+    return { props: { path: id, content } };
+  },
+  async update(id, nextProps, currentProps) {
+    await Deno.writeTextFile(id, nextProps.content);
+  },
+  async delete(id, props) {
+    await Deno.remove(id);
+  },
+  // ... other methods
+});
+```
+
+#### Stateful with Zod
+
+For stateful resources, provide both props and state schemas:
 
 ```ts
 import { z } from "jsr:@zod/zod";
