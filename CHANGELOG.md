@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.4.0](https://github.com/brad-jones/terraform-provider-denobridge/compare/9b8ff4d5a036ebbf8a936b251878fe3a09dba922..v0.4.0) - 2026-02-14
+#### Features
+- (**resource**) add support for write only props - ([9b8ff4d](https://github.com/brad-jones/terraform-provider-denobridge/commit/9b8ff4d5a036ebbf8a936b251878fe3a09dba922)) - [@brad-jones](https://github.com/brad-jones)
+
+- - -
+
 ## [v0.3.0](https://github.com/brad-jones/terraform-provider-denobridge/compare/6456dec71c41a5fe8317a1add2ac56c7508d3e75..v0.3.0) - 2026-02-13
 #### Features
 - (**datasource**) add support for sensitive state management - ([2253e14](https://github.com/brad-jones/terraform-provider-denobridge/commit/2253e14ba992acfe8fddaa4e9354302a7bd38f19)) - [@brad-jones](https://github.com/brad-jones)

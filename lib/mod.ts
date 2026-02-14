@@ -3,4 +3,4 @@ export * from "./providers/datasource.ts";
 export * from "./providers/ephemeral_resource.ts";
 export * from "./providers/resource.ts";
 
-export const DENOBRIDGE_VERSION = "0.3.0";
+export const DENOBRIDGE_VERSION = "0.4.0";
