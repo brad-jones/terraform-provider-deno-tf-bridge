@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.4.1](https://github.com/brad-jones/terraform-provider-denobridge/compare/ec13ad526a522a9a06e3a19e844c90cf97f27d5f..v0.4.1) - 2026-02-15
+#### Bug Fixes
+- (**lib**) defensively check that a value is an object before attempting to delete properties from it - ([ec13ad5](https://github.com/brad-jones/terraform-provider-denobridge/commit/ec13ad526a522a9a06e3a19e844c90cf97f27d5f)) - [@brad-jones](https://github.com/brad-jones)
+
+- - -
+
 ## [v0.4.0](https://github.com/brad-jones/terraform-provider-denobridge/compare/9b8ff4d5a036ebbf8a936b251878fe3a09dba922..v0.4.0) - 2026-02-14
 #### Features
 - (**resource**) add support for write only props - ([9b8ff4d](https://github.com/brad-jones/terraform-provider-denobridge/commit/9b8ff4d5a036ebbf8a936b251878fe3a09dba922)) - [@brad-jones](https://github.com/brad-jones)
