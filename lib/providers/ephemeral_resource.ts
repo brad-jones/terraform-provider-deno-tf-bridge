@@ -82,7 +82,7 @@ export class EphemeralResourceProvider<TProps, TResult, TPrivateData = never> ex
 
         // deno-lint-ignore no-explicit-any
         const resultData = result.result as any;
-        if (resultData && "sensitive" in resultData) {
+        if (resultData && typeof resultData === "object" && "sensitive" in resultData) {
           delete resultData["sensitive"];
         }
 

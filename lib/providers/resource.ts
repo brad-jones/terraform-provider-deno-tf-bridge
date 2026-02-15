@@ -208,7 +208,7 @@ export class ResourceProvider<TProps, TState = void, TID = string> extends BaseJ
         const sensitiveState = (result as any).state?.sensitive;
 
         const state = (result as any).state;
-        if (state && "sensitive" in state) {
+        if (state && typeof state === "object" && "sensitive" in state) {
           delete state["sensitive"];
         }
 
@@ -224,7 +224,7 @@ export class ResourceProvider<TProps, TState = void, TID = string> extends BaseJ
         const sensitiveState = (result as any).state?.sensitive;
 
         const state = (result as any).state;
-        if (state && "sensitive" in state) {
+        if (state && typeof state === "object" && "sensitive" in state) {
           delete state["sensitive"];
         }
 
@@ -252,7 +252,7 @@ export class ResourceProvider<TProps, TState = void, TID = string> extends BaseJ
         const sensitiveState = (result as any)?.sensitive;
 
         const state = result as any;
-        if (state && "sensitive" in state) {
+        if (state && typeof state === "object" && "sensitive" in state) {
           delete state["sensitive"];
         }
 

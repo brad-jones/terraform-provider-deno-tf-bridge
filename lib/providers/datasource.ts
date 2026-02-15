@@ -42,7 +42,7 @@ export class DatasourceProvider<TProps, TResult> extends BaseJsonRpcProvider {
 
         // deno-lint-ignore no-explicit-any
         const resultData = result as any;
-        if (resultData && "sensitive" in resultData) {
+        if (resultData && typeof resultData === "object" && "sensitive" in resultData) {
           delete resultData["sensitive"];
         }
 
